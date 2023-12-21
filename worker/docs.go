@@ -49,7 +49,7 @@
 //	    fmt.Println(result)
 //	}
 //
-// Enhancements:
+// # Enhancements
 //
 //   - The package now includes structured logging capabilities, enhancing traceability
 //     and aiding in debugging efforts by providing detailed contextual information.
@@ -57,7 +57,7 @@
 //   - Logging functionality is customizable, allowing different workers to provide
 //     unique contextual information, such as worker indices or specific namespaces.
 //
-// TODO:
+// # TODO
 //
 //   - Extend the functionality of the CrewWorker function to support a wider range
 //     of tasks and allow for greater configurability.
