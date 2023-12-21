@@ -62,6 +62,8 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsnames
 // It is expected to return an error if the task cannot be completed successfully, which triggers the retry logic.
 func performTask(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string) error {
 	// Task implementation goes here
+	// Note: Currently unimplemented, not ready yet unless you want to implement it as expert.
+	// Tip implementation: use go rountine to run this function in command module, call the captain jack sparrow to run this function.
 	// Return nil if successful, or an error if something goes wrong
 	return nil
 }
