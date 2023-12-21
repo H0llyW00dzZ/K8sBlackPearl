@@ -42,4 +42,5 @@ const (
 	WorkerFailedToCreatePod      = "Failed to create pod"
 	WorkerFailedToDeletePod      = "Failed to delete pod"
 	WorkerCountPods              = "Count pods"
+	CrewWorkerUnit               = "Crew Worker"
 )
