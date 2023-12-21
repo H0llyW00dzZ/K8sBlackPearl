@@ -1,5 +1,6 @@
 package worker
 
+// Note: This constant used for dir machine
 // defined in worker/cmd_constant.go
 const (
 	HOME    = "HOME"
