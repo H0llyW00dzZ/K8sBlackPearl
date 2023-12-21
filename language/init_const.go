@@ -13,6 +13,8 @@ const (
 	PodAndStatusAndHealth  = "Pod: %s, Status: %s, Health: %s"
 	errconfig              = "cannot load kubeconfig: %w"
 	cannotcreatek8s        = "cannot create kubernetes client: %w"
+	ErrorLoggerIsNotSet    = "Logger is not set! Cannot log info: %s\n"
+	ErrorLogger            = "cannot create logger: %w"
 )
 
 const (
@@ -42,5 +44,5 @@ const (
 	WorkerFailedToCreatePod      = "Failed to create pod"
 	WorkerFailedToDeletePod      = "Failed to delete pod"
 	WorkerCountPods              = "Count pods"
-	CrewWorkerUnit               = "Crew Worker"
+	CrewWorkerUnit               = "crew_worker_unit"
 )
