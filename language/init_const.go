@@ -13,9 +13,6 @@ const (
 	NotHealthyStatus       = "Not Healthy"
 	HealthyStatus          = "Healthy"
 	WorkerCancelled        = "Worker cancelled: %v"
-	HOME                   = "HOME"
-	kube                   = ".kube"
-	Config                 = "config"
 	errconfig              = "cannot load kubeconfig: %w"
 	cannotcreatek8s        = "cannot create kubernetes client: %w"
 )
