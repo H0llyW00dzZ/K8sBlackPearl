@@ -22,7 +22,7 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsnames
 	pods, err := CrewGetPods(ctx, clientset, shipsnamespace)
 	if err != nil { // Note: this not possible to used constant for `fmt.Sprintf`
 		errMsg := fmt.Sprintf("Error retrieving pods: %v", err)
-		logErrorWithEmoji(constant.ErrorEmoji, errMsg)
+		logErrorWithEmoji(constant.ErrorEmoji, errMsg, fields...)
 		results <- errMsg
 		return
 	}
