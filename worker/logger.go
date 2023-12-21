@@ -2,30 +2,53 @@ package worker
 
 import (
 	"fmt"
+	"sync"
 
+	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"go.uber.org/zap"
 )
 
-// Logger is a package-level variable to access the zap logger throughout the handlers package.
-// It is intended to be used by other functions within the package for logging purposes.
+// Logger is a package-level variable to access the zap logger throughout the worker package.
 var Logger *zap.Logger
 
-// SetLogger sets the logger instance for the package.
+// mu is used to protect access to the Logger variable to make it safe for concurrent use.
+var mu sync.Mutex
+
+// SetLogger sets the logger instance for the package in a thread-safe manner.
 func SetLogger(logger *zap.Logger) {
+	mu.Lock()
+	defer mu.Unlock()
 	Logger = logger
 }
 
-// logInfoWithEmoji logs an informational message with given emoji, context, and fields.
+// logInfoWithEmoji logs an informational message with a given emoji, context, and fields.
+// It checks if the Logger is not nil before logging to prevent panics.
 func logInfoWithEmoji(emoji string, context string, fields ...zap.Field) {
-	Logger.Info(emoji+"  "+context, fields...)
+	mu.Lock()
+	defer mu.Unlock()
+
+	if Logger == nil {
+		fmt.Printf(language.ErrorLoggerIsNotSet, context)
+		return
+	}
+	Logger.Info(emoji+" "+context, fields...)
 }
 
-// logErrorWithEmoji logs an error message with given emoji, context, and fields.
+// logErrorWithEmoji logs an error message with a given emoji, context, and fields.
+// It checks if the Logger is not nil before logging to prevent panics.
 func logErrorWithEmoji(emoji string, context string, fields ...zap.Field) {
-	Logger.Error(emoji+"  "+context, fields...)
+	mu.Lock()
+	defer mu.Unlock()
+
+	if Logger == nil {
+		fmt.Printf(language.ErrorLoggerIsNotSet, context)
+		return
+	}
+	Logger.Error(emoji+" "+context, fields...)
 }
 
 // createLogFields creates a slice of zap.Field with the operation and additional info.
+// It can be used to add structured context to logs.
 func createLogFields(sailing string, shipsnamespace string, infos ...string) []zap.Field {
 	fields := []zap.Field{
 		zap.String("sailing", sailing),
