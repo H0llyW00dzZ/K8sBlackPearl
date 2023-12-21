@@ -1,8 +1,15 @@
-![GO Pirate](https://i.imgur.com/A6dJUZx.png) ![K8sBlackPearl](https://i.imgur.com/HlUsvbY.png)
+<p align="center">
+  <img src="https://i.imgur.com/A6dJUZx.png" alt="GO Pirate" />
+  <img src="https://i.imgur.com/HlUsvbY.png" alt="K8sBlackPearl" />
+</p>
 
-***Pic found in [`reddit`](https://www.reddit.com/r/golang_id) & Searching***
+<p align="center">
+  <em>Pic found in <a href="https://www.reddit.com/r/golang_id">reddit</a> & Searching</em>
+</p>
 
 # K8sBlackPearl 🏴‍☠️
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/H0llyW00dzZ/K8sBlackPearl)](https://goreportcard.com/report/github.com/H0llyW00dzZ/K8sBlackPearl)
 
 ### Shall We have Drink ?
 
