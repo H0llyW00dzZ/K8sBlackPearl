@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
+	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 )
@@ -25,8 +26,8 @@ func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, sh
 			defer wg.Done()
 
 			// Set up the logger for this worker.
-			workerLogger := Logger.With(zap.Int(language.CrewWorkerUnit, workerIndex))
-			SetLogger(workerLogger) // Assuming this is safe to call multiple times and is goroutine-safe.
+			workerLogger := navigator.Logger.With(zap.Int(language.CrewWorkerUnit, workerIndex))
+			navigator.SetLogger(workerLogger) // Assuming this is safe to call multiple times and is goroutine-safe.
 
 			// Now call CrewWorker without the logger, since it will use the package-level Logger.
 			CrewWorker(shutdownCtx, clientset, shipsNamespace, results)

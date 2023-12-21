@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
+	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -37,11 +38,11 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsnames
 		}
 
 		// Log the error with retry attempt information
-		logErrorWithEmoji(constant.ErrorEmoji, fmt.Sprintf(language.ErrorDuringTaskAttempt, attempt+1, maxRetries, err), zap.Error(err))
+		navigator.LogErrorWithEmoji(constant.ErrorEmoji, fmt.Sprintf(language.ErrorDuringTaskAttempt, attempt+1, maxRetries, err), zap.Error(err))
 
 		// Check if the context has been cancelled before continuing
 		if ctx.Err() != nil {
-			logErrorWithEmoji(constant.ErrorEmoji, language.ContextCancelled, zap.Error(ctx.Err()))
+			navigator.LogErrorWithEmoji(constant.ErrorEmoji, language.ContextCancelled, zap.Error(ctx.Err()))
 			results <- language.ContextCancelled
 			return
 		}
@@ -52,7 +53,7 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsnames
 
 	// If we reach this point, all retries have failed
 	finalErrorMessage := fmt.Sprintf(language.ErrorFailedToComplete, maxRetries)
-	logErrorWithEmoji(constant.ErrorEmoji, finalErrorMessage, zap.String("shipsnamespace", shipsnamespace))
+	navigator.LogErrorWithEmoji(constant.ErrorEmoji, finalErrorMessage, zap.String("shipsnamespace", shipsnamespace))
 	results <- finalErrorMessage
 }
 
@@ -70,16 +71,16 @@ func performTask(ctx context.Context, clientset *kubernetes.Clientset, shipsname
 // It returns a slice of pods and an error, which would be nil if the retrieval was successful.
 func CrewGetPods(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string) ([]corev1.Pod, error) {
 	// List all pods in the shipsnamespace using the provided context.
-	fields := createLogFields(language.TaskFetchPods, shipsnamespace)
-	logInfoWithEmoji(constant.ModernGopherEmoji, language.FetchingPods, fields...)
+	fields := navigator.CreateLogFields(language.TaskFetchPods, shipsnamespace)
+	navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, language.FetchingPods, fields...)
 
 	podList, err := clientset.CoreV1().Pods(shipsnamespace).List(ctx, v1.ListOptions{})
 	if err != nil {
-		logErrorWithEmoji(constant.ModernGopherEmoji, language.WorkerFailedToListPods, fields...)
+		navigator.LogErrorWithEmoji(constant.ModernGopherEmoji, language.WorkerFailedToListPods, fields...)
 		return nil, err
 	}
 
-	logInfoWithEmoji(constant.ModernGopherEmoji, language.PodsFetched, append(fields, zap.Int(language.WorkerCountPods, len(podList.Items)))...)
+	navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, language.PodsFetched, append(fields, zap.Int(language.WorkerCountPods, len(podList.Items)))...)
 	return podList.Items, nil
 }
 
@@ -91,7 +92,7 @@ func CrewProcessPods(ctx context.Context, pods []corev1.Pod, results chan<- stri
 		select {
 		case <-ctx.Done():
 			cancelMsg := fmt.Sprintf(language.WorkerCancelled, ctx.Err())
-			logInfoWithEmoji(constant.ModernGopherEmoji, cancelMsg)
+			navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, cancelMsg)
 			results <- cancelMsg
 			return
 		default:
@@ -101,7 +102,7 @@ func CrewProcessPods(ctx context.Context, pods []corev1.Pod, results chan<- stri
 				healthStatus = language.HealthyStatus
 			}
 			statusMsg := fmt.Sprintf(language.PodAndStatusAndHealth, pod.Name, pod.Status.Phase, healthStatus)
-			logInfoWithEmoji(constant.ModernGopherEmoji, language.PodsFetched, createLogFields(language.ProcessingPods, pod.Name, statusMsg)...)
+			navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, language.PodsFetched, navigator.CreateLogFields(language.ProcessingPods, pod.Name, statusMsg)...)
 			results <- statusMsg
 		}
 	}
