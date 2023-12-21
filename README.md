@@ -14,7 +14,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 
 # TODO
 
-- [x] Implement error handling and retry logic within the Worker function to handle transient errors.
-- [ ] Enhance the Worker function to perform a more specific task or to be more configurable.
+- [x] Implement error handling and retry logic within the CrewWorker function to handle transient errors.
+- [ ] Enhance the CrewWorker function to perform a more specific task or to be more configurable.
 - [ ] Expand the package to support other Kubernetes resources and operations.
 - [ ] Introduce metrics collection for monitoring the health and performance of the workers.
