@@ -12,14 +12,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// CrewWorker starts a worker process that retrieves all pods in a given namespace,
+// CrewWorker starts a worker process that retrieves all pods in a given shipsnamespace,
 // performs health checks on them, and sends the results to a channel.
-func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, namespace string, results chan<- string) {
-	fields := createLogFields(language.TaskCheckHealth, namespace)
-	// Retrieve a list of pods from the namespace.
+func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, results chan<- string) {
+	fields := createLogFields(language.TaskCheckHealth, shipsnamespace)
+	// Retrieve a list of pods from the shipsnamespace.
 	logInfoWithEmoji(constant.InfoEmoji, language.WorkerStarted, fields...)
 
-	pods, err := CrewGetPods(ctx, clientset, namespace)
+	pods, err := CrewGetPods(ctx, clientset, shipsnamespace)
 	if err != nil { // Note: this not possible to used constant for `fmt.Sprintf`
 		errMsg := fmt.Sprintf("Error retrieving pods: %v", err)
 		logErrorWithEmoji(constant.ErrorEmoji, errMsg)
@@ -33,12 +33,12 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, namespace 
 }
 
 // CrewGetPods fetches the list of all pods within a specific namespace.
-func CrewGetPods(ctx context.Context, clientset *kubernetes.Clientset, namespace string) ([]corev1.Pod, error) {
-	// List all pods in the namespace using the provided context.
-	fields := createLogFields(language.TaskFetchPods, namespace)
+func CrewGetPods(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string) ([]corev1.Pod, error) {
+	// List all pods in the shipsnamespace using the provided context.
+	fields := createLogFields(language.TaskFetchPods, shipsnamespace)
 	logInfoWithEmoji(constant.ModernGopherEmoji, language.FetchingPods, fields...)
 
-	podList, err := clientset.CoreV1().Pods(namespace).List(ctx, v1.ListOptions{})
+	podList, err := clientset.CoreV1().Pods(shipsnamespace).List(ctx, v1.ListOptions{})
 	if err != nil {
 		logErrorWithEmoji(constant.ModernGopherEmoji, language.WorkerFailedToListPods, fields...)
 		return nil, err
