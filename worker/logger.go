@@ -26,10 +26,10 @@ func logErrorWithEmoji(emoji string, context string, fields ...zap.Field) {
 }
 
 // createLogFields creates a slice of zap.Field with the operation and additional info.
-func createLogFields(operation string, namespace string, infos ...string) []zap.Field {
+func createLogFields(sailing string, shipsnamespace string, infos ...string) []zap.Field {
 	fields := []zap.Field{
-		zap.String("operation", operation),
-		zap.String("namespace", namespace),
+		zap.String("sailing", sailing),
+		zap.String("shipsnamespace", shipsnamespace),
 	}
 	for i, info := range infos {
 		fields = append(fields, zap.String(fmt.Sprintf("info%d", i+1), info))

@@ -17,10 +17,10 @@ import (
 func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, namespace string, results chan<- string) {
 	fields := createLogFields(language.TaskCheckHealth, namespace)
 	// Retrieve a list of pods from the namespace.
-	logInfoWithEmoji(constant.InfoEmoji, "Worker started", fields...)
+	logInfoWithEmoji(constant.InfoEmoji, language.WorkerStarted, fields...)
 
 	pods, err := CrewGetPods(ctx, clientset, namespace)
-	if err != nil {
+	if err != nil { // Note: this not possible to used constant for `fmt.Sprintf`
 		errMsg := fmt.Sprintf("Error retrieving pods: %v", err)
 		logErrorWithEmoji(constant.ErrorEmoji, errMsg)
 		results <- errMsg
@@ -29,7 +29,7 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, namespace 
 
 	// Process each pod to determine its health status and send the results on the channel.
 	CrewProcessPods(ctx, pods, results)
-	logInfoWithEmoji(constant.ModernGopherEmoji, "Worker finished processing pods", fields...)
+	logInfoWithEmoji(constant.ModernGopherEmoji, language.WorkerFinishedProcessingPods, fields...)
 }
 
 // CrewGetPods fetches the list of all pods within a specific namespace.
@@ -40,11 +40,11 @@ func CrewGetPods(ctx context.Context, clientset *kubernetes.Clientset, namespace
 
 	podList, err := clientset.CoreV1().Pods(namespace).List(ctx, v1.ListOptions{})
 	if err != nil {
-		logErrorWithEmoji(constant.ModernGopherEmoji, "Failed to list pods", fields...)
+		logErrorWithEmoji(constant.ModernGopherEmoji, language.WorkerFailedToListPods, fields...)
 		return nil, err
 	}
 
-	logInfoWithEmoji(constant.ModernGopherEmoji, language.PodsFetched, append(fields, zap.Int("count", len(podList.Items)))...)
+	logInfoWithEmoji(constant.ModernGopherEmoji, language.PodsFetched, append(fields, zap.Int(language.WorkerCountPods, len(podList.Items)))...)
 	return podList.Items, nil
 }
 
@@ -54,7 +54,7 @@ func CrewProcessPods(ctx context.Context, pods []corev1.Pod, results chan<- stri
 	for _, pod := range pods {
 		select {
 		case <-ctx.Done():
-			cancelMsg := fmt.Sprintf("Worker cancelled: %v", ctx.Err())
+			cancelMsg := fmt.Sprintf(language.WorkerCancelled, ctx.Err())
 			logInfoWithEmoji(constant.ModernGopherEmoji, cancelMsg)
 			results <- cancelMsg
 			return

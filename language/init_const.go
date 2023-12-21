@@ -11,7 +11,6 @@ const (
 	ErrorRetrievingPods    = "Error retrieving pods: %w"
 	PodAndStatus           = "Pod: %s, Status: %s"
 	PodAndStatusAndHealth  = "Pod: %s, Status: %s, Health: %s"
-	WorkerCancelled        = "Worker cancelled: %v"
 	errconfig              = "cannot load kubeconfig: %w"
 	cannotcreatek8s        = "cannot create kubernetes client: %w"
 )
@@ -33,4 +32,14 @@ const (
 	TaskGetPod      = "GetPod"
 	TaskFetchPods   = "FetchPods"
 	TaskProcessPod  = "ProcessPod"
+)
+
+const (
+	WorkerStarted                = "Worker started"
+	WorkerFinishedProcessingPods = "Worker finished processing pods"
+	WorkerCancelled              = "Worker cancelled: %v"
+	WorkerFailedToListPods       = "Failed to list pods"
+	WorkerFailedToCreatePod      = "Failed to create pod"
+	WorkerFailedToDeletePod      = "Failed to delete pod"
+	WorkerCountPods              = "Count pods"
 )
