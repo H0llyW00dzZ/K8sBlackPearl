@@ -1,5 +1,6 @@
 package language
 
+// Note: This constant used for translation.
 const (
 	ErrorListingPods       = "error listing pods: %w"
 	ErrorUpdatingPodLabels = "error updating pod labels: %w"
@@ -10,8 +11,6 @@ const (
 	ErrorRetrievingPods    = "Error retrieving pods: %w"
 	PodAndStatus           = "Pod: %s, Status: %s"
 	PodAndStatusAndHealth  = "Pod: %s, Status: %s, Health: %s"
-	NotHealthyStatus       = "Not Healthy"
-	HealthyStatus          = "Healthy"
 	WorkerCancelled        = "Worker cancelled: %v"
 	errconfig              = "cannot load kubeconfig: %w"
 	cannotcreatek8s        = "cannot create kubernetes client: %w"
@@ -21,6 +20,11 @@ const (
 	FetchingPods   = "Fetching pods"
 	PodsFetched    = "Pods fetched"
 	ProcessingPods = "Processing pods"
+)
+
+const (
+	NotHealthyStatus = "Not Healthy"
+	HealthyStatus    = "Healthy"
 )
 
 const (
