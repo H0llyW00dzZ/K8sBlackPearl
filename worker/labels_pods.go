@@ -10,17 +10,17 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// LabelPods sets a specific label on all pods within the specified namespace that do not already have it.
-func LabelPods(ctx context.Context, clientset *kubernetes.Clientset, namespace, labelKey, labelValue string) error {
-	// Retrieve a list of all pods in the given namespace using the provided context.
-	pods, err := clientset.CoreV1().Pods(namespace).List(ctx, v1.ListOptions{})
+// LabelPods sets a specific label on all pods within the specified shipsnamespace that do not already have it.
+func LabelPods(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace, labelKey, labelValue string) error {
+	// Retrieve a list of all pods in the given shipsnamespace using the provided context.
+	pods, err := clientset.CoreV1().Pods(shipsnamespace).List(ctx, v1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf(language.ErrorListingPods, err)
 	}
 
 	// Iterate over the list of pods and update their labels if necessary.
 	for _, pod := range pods.Items {
-		if err := labelSinglePod(ctx, clientset, &pod, namespace, labelKey, labelValue); err != nil {
+		if err := labelSinglePod(ctx, clientset, &pod, shipsnamespace, labelKey, labelValue); err != nil {
 			return err
 		}
 	}
@@ -28,7 +28,7 @@ func LabelPods(ctx context.Context, clientset *kubernetes.Clientset, namespace, 
 }
 
 // labelSinglePod applies the label to a single pod if it doesn't already have it.
-func labelSinglePod(ctx context.Context, clientset *kubernetes.Clientset, pod *corev1.Pod, namespace, labelKey, labelValue string) error {
+func labelSinglePod(ctx context.Context, clientset *kubernetes.Clientset, pod *corev1.Pod, shipsnamespace, labelKey, labelValue string) error {
 	// If the pod already has the label with the correct value, skip updating.
 	if pod.Labels[labelKey] == labelValue {
 		return nil
@@ -42,7 +42,7 @@ func labelSinglePod(ctx context.Context, clientset *kubernetes.Clientset, pod *c
 	podCopy.Labels[labelKey] = labelValue
 
 	// Update the pod with the new label using the provided context.
-	_, err := clientset.CoreV1().Pods(namespace).Update(ctx, podCopy, v1.UpdateOptions{})
+	_, err := clientset.CoreV1().Pods(shipsnamespace).Update(ctx, podCopy, v1.UpdateOptions{})
 	if err != nil {
 		return fmt.Errorf(language.ErrorUpdatingPod, err)
 	}
