@@ -15,6 +15,10 @@ const (
 	cannotcreatek8s        = "cannot create kubernetes client: %w"
 	ErrorLoggerIsNotSet    = "Logger is not set! Cannot log info: %s\n"
 	ErrorLogger            = "cannot create logger: %w"
+	ErrorFailedToComplete  = "Failed to complete task after %d attempts"
+	ContextCancelledAbort  = "Context cancelled, aborting retries."
+	ContextCancelled       = "Context cancelled"
+	ErrorDuringTaskAttempt = "Error during task, attempt %d/%d: %v"
 )
 
 const (
