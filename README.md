@@ -1,4 +1,6 @@
-![K8sBlackPearl Logo](https://i.imgur.com/HlUsvbY.png)
+![GO Pirate](https://i.imgur.com/A6dJUZx.png) ![K8sBlackPearl](https://i.imgur.com/HlUsvbY.png)
+
+***Pic found in [`reddit`](https://www.reddit.com/r/golang_id) & Searching***
 
 # K8sBlackPearl 🏴‍☠️
 
