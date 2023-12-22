@@ -24,10 +24,12 @@ import (
 // This function first logs a summary message indicating the total number of pods fetched.
 // It then iterates over each pod in the list and logs its name and status. The logs are
 // decorated with an emoji for better visual distinction in log outputs.
-func logPods(fields []zap.Field, podList *corev1.PodList) {
-	navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, language.PodsFetched, append(fields, zap.Int(language.WorkerCountPods, len(podList.Items)))...)
+func logPods(baseFields []zap.Field, podList *corev1.PodList) {
 	for _, pod := range podList.Items {
-		podFields := append(fields, zap.String(language.PodsName, pod.Name), zap.String(language.PodStatus, string(pod.Status.Phase)))
+		// Create a copy of baseFields for each pod to avoid appending to the same slice
+		podFields := make([]zap.Field, len(baseFields))
+		copy(podFields, baseFields)
+		podFields = append(podFields, zap.String(language.PodsName, pod.Name), zap.String(language.PodStatus, string(pod.Status.Phase)))
 		navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, fmt.Sprintf(language.ProcessingPods, pod.Name), podFields...)
 	}
 }
