@@ -10,7 +10,6 @@ import (
 	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -25,65 +24,40 @@ const (
 // waiting for a specified duration (retryDelay) between each attempt.
 // If the task fails after all retries or if the context is cancelled, it logs an error and
 // sends a final message to the results channel indicating the failure or cancellation.
-func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, results chan<- string) {
-	// Initial setup (if any)
+func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, tasks []Task, results chan<- string) {
+	// Iterate over each task and attempt to perform it with retries
+	for _, task := range tasks {
+		// Retry loop for each task
+		for attempt := 0; attempt < maxRetries; attempt++ {
+			// Attempt to perform the task
+			err := performTask(ctx, clientset, shipsnamespace, task)
+			if err == nil {
+				// Task was successful, no need to retry
+				results <- fmt.Sprintf(language.TaskCompleteS, task.Name)
+				break
+			}
 
-	// Retry loop
-	for attempt := 0; attempt < maxRetries; attempt++ {
-		// Attempt to perform the task
-		err := performTask(ctx, clientset, shipsnamespace)
-		if err == nil {
-			// Task was successful, no need to retry
-			return
+			// Log the error with retry attempt information
+			navigator.LogErrorWithEmoji(constant.ErrorEmoji, fmt.Sprintf(language.ErrorDuringTaskAttempt, attempt+1, maxRetries, err), zap.Error(err))
+
+			// Check if the context has been cancelled before continuing
+			if ctx.Err() != nil {
+				navigator.LogErrorWithEmoji(constant.ErrorEmoji, language.ContextCancelled, zap.Error(ctx.Err()))
+				results <- language.ContextCancelled
+				break
+			}
+
+			// Wait for the retry delay before trying again
+			time.Sleep(retryDelay)
 		}
 
-		// Log the error with retry attempt information
-		navigator.LogErrorWithEmoji(constant.ErrorEmoji, fmt.Sprintf(language.ErrorDuringTaskAttempt, attempt+1, maxRetries, err), zap.Error(err))
-
-		// Check if the context has been cancelled before continuing
-		if ctx.Err() != nil {
-			navigator.LogErrorWithEmoji(constant.ErrorEmoji, language.ContextCancelled, zap.Error(ctx.Err()))
-			results <- language.ContextCancelled
-			return
+		// Check if all retries have been exhausted
+		if ctx.Err() == nil {
+			finalErrorMessage := fmt.Sprintf(language.ErrorFailedToCompleteTask, task.Name, maxRetries)
+			navigator.LogErrorWithEmoji(constant.ErrorEmoji, finalErrorMessage, zap.String("shipsnamespace", shipsnamespace))
+			results <- finalErrorMessage
 		}
-
-		// Wait for the retry delay before trying again
-		time.Sleep(retryDelay)
 	}
-
-	// If we reach this point, all retries have failed
-	finalErrorMessage := fmt.Sprintf(language.ErrorFailedToComplete, maxRetries)
-	navigator.LogErrorWithEmoji(constant.ErrorEmoji, finalErrorMessage, zap.String("shipsnamespace", shipsnamespace))
-	results <- finalErrorMessage
-}
-
-// performTask simulates a task that needs to be performed by the worker.
-// In practice, this function would contain the actual logic of the task the worker is meant to perform.
-// It is expected to return an error if the task cannot be completed successfully, which triggers the retry logic.
-func performTask(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string) error {
-	// Task implementation goes here
-	// Note: Currently unimplemented, not ready yet unless you want to implement it as expert.
-	// Tip implementation: use go rountine to run this function in command module, call the captain jack sparrow to run this function.
-	// Return nil if successful, or an error if something goes wrong
-	return nil
-}
-
-// CrewGetPods retrieves all pods within a specified namespace.
-// It logs the attempt and outcome of the retrieval process.
-// It returns a slice of pods and an error, which would be nil if the retrieval was successful.
-func CrewGetPods(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string) ([]corev1.Pod, error) {
-	// List all pods in the shipsnamespace using the provided context.
-	fields := navigator.CreateLogFields(language.TaskFetchPods, shipsnamespace)
-	navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, language.FetchingPods, fields...)
-
-	podList, err := clientset.CoreV1().Pods(shipsnamespace).List(ctx, v1.ListOptions{})
-	if err != nil {
-		navigator.LogErrorWithEmoji(constant.ModernGopherEmoji, language.WorkerFailedToListPods, fields...)
-		return nil, err
-	}
-
-	navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, language.PodsFetched, append(fields, zap.Int(language.WorkerCountPods, len(podList.Items)))...)
-	return podList.Items, nil
 }
 
 // CrewProcessPods iterates over a slice of pods, checking the health of each pod.
