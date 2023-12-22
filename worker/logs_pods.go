@@ -27,7 +27,7 @@ import (
 func logPods(fields []zap.Field, podList *corev1.PodList) {
 	navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, language.PodsFetched, append(fields, zap.Int(language.WorkerCountPods, len(podList.Items)))...)
 	for _, pod := range podList.Items {
-		podFields := append(fields, zap.String("PodName", pod.Name), zap.String("PodStatus", string(pod.Status.Phase)))
+		podFields := append(fields, zap.String(language.PodsName, pod.Name), zap.String(language.PodStatus, string(pod.Status.Phase)))
 		navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, fmt.Sprintf(language.ProcessingPods, pod.Name), podFields...)
 	}
 }
@@ -41,11 +41,11 @@ func (c *CrewProcessCheckHealthTask) checkPodsHealth(ctx context.Context, podLis
 			case <-ctx.Done():
 				return
 			default:
-				healthStatus := "Not Healthy"
+				healthStatus := language.NotHealthyStatus
 				if CrewCheckingisPodHealthy(&pod) {
-					healthStatus = "Healthy"
+					healthStatus = language.HealthyStatus
 				}
-				statusMsg := fmt.Sprintf("Pod: %s, Status: %s, Health: %s", pod.Name, pod.Status.Phase, healthStatus)
+				statusMsg := fmt.Sprintf(language.PodAndStatusAndHealth, pod.Name, pod.Status.Phase, healthStatus)
 				results <- statusMsg
 			}
 		}
@@ -57,7 +57,7 @@ func (c *CrewProcessCheckHealthTask) logResults(ctx context.Context, results cha
 	for {
 		select {
 		case <-ctx.Done():
-			navigator.LogErrorWithEmoji(constant.ModernGopherEmoji, "Pod processing was cancelled.", zap.Error(ctx.Err()))
+			navigator.LogErrorWithEmoji(constant.ModernGopherEmoji, language.ErrorPodsCancelled, zap.Error(ctx.Err()))
 			return ctx.Err()
 		case result, ok := <-results:
 			if !ok {
