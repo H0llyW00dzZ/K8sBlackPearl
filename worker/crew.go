@@ -8,6 +8,7 @@ import (
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -63,6 +64,18 @@ func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset
 			return fmt.Errorf(language.ContextCancelled)
 		}
 
+		fieldslog := navigator.CreateLogFields(
+			language.TaskFetchPods,
+			shipsnamespace,
+			navigator.WithAnyZapField(zap.Int("attempt", attempt+1)),
+			navigator.WithAnyZapField(zap.Int("max_retries", maxRetries)),
+		)
+		navigator.LogInfoWithEmoji(
+			constant.ModernGopherEmoji,
+			fmt.Sprintf(language.RetryingTask, attempt+1, maxRetries),
+			fieldslog...,
+		)
+
 		logRetryAttempt(task.Name, attempt, err)
 		time.Sleep(retryDelay)
 	}
@@ -88,7 +101,14 @@ func CrewProcessPods(ctx context.Context, pods []corev1.Pod, results chan<- stri
 				healthStatus = language.HealthyStatus
 			}
 			statusMsg := fmt.Sprintf(language.PodAndStatusAndHealth, pod.Name, pod.Status.Phase, healthStatus)
-			navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, language.PodsFetched, navigator.CreateLogFields(language.ProcessingPods, pod.Name, statusMsg)...)
+			fields := navigator.CreateLogFields(
+				language.ProcessingPods,
+				pod.Namespace,
+				navigator.WithAnyZapField(zap.String("pod", pod.Name)),
+				navigator.WithAnyZapField(zap.String("phase", string(pod.Status.Phase))),
+				navigator.WithAnyZapField(zap.String("healthStatus", healthStatus)),
+			)
+			navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, statusMsg, fields...)
 			results <- statusMsg
 		}
 	}
