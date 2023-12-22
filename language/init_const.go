@@ -20,12 +20,15 @@ const (
 	ContextCancelledAbort  = "Context cancelled, aborting retries."
 	ContextCancelled       = "Context cancelled"
 	ErrorDuringTaskAttempt = "Error during task, attempt %d/%d: %v"
+	UnknownTaskType        = "unknown task type: %s"
 )
 
 const (
 	FetchingPods   = "Fetching pods"
 	PodsFetched    = "Pods fetched"
-	ProcessingPods = "Processing pods"
+	ProcessingPods = "Processing pod: %s"
+	PodsName       = "Pods name"
+	PodStatus      = "Pods status"
 )
 
 const (
@@ -34,11 +37,15 @@ const (
 )
 
 const (
-	TaskLabelKey    = "LabelKey"
-	TaskCheckHealth = "CheckHealth"
-	TaskGetPod      = "GetPod"
-	TaskFetchPods   = "FetchPods"
-	TaskProcessPod  = "ProcessPod"
+	TaskLabelKey      = "LabelKey"
+	TaskCheckHealth   = "CheckHealth"
+	TaskGetPod        = "GetPod"
+	TaskFetchPods     = "FetchPods"
+	TaskProcessPod    = "ProcessPod"
+	TaskCreatePod     = "CreatePod"
+	TaskDeletePod     = "DeletePod"
+	TaskCompleteS     = "Task '%s' completed successfully."
+	RunningTaskBackup = "Running BackupTaskRunner with parameters:"
 )
 
 const (
@@ -50,4 +57,8 @@ const (
 	WorkerFailedToDeletePod      = "Failed to delete pod"
 	WorkerCountPods              = "Count pods"
 	CrewWorkerUnit               = "crew_worker_unit"
+)
+
+const (
+	ErrorFailedToCompleteTask = "Failed to complete task %s after %d attempts"
 )
