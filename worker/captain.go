@@ -12,7 +12,7 @@ import (
 
 // CaptainTellWorkers starts the specified number of worker goroutines to perform tasks and collects their results.
 // It returns a channel to receive the results and a function to trigger a graceful shutdown.
-func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, workerCount int) (<-chan string, func()) {
+func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []Task, workerCount int) (<-chan string, func()) {
 	results := make(chan string)
 	var wg sync.WaitGroup
 
@@ -29,8 +29,8 @@ func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, sh
 			workerLogger := navigator.Logger.With(zap.Int(language.CrewWorkerUnit, workerIndex))
 			navigator.SetLogger(workerLogger) // Assuming this is safe to call multiple times and is goroutine-safe.
 
-			// Now call CrewWorker without the logger, since it will use the package-level Logger.
-			CrewWorker(shutdownCtx, clientset, shipsNamespace, results)
+			// Now call CrewWorker with the tasks and the logger, since it will use the package-level Logger.
+			CrewWorker(shutdownCtx, clientset, shipsNamespace, tasks, results)
 		}(i)
 	}
 
