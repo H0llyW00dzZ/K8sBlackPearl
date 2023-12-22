@@ -35,6 +35,11 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 ]
 ```
 
+#### Additonal Note
+
+> [!NOTE]  
+> This still development, there is no configuration/setup, or docs for how to run it unless you are expert in GO.
+
 # TODO
 
 - [x] Implement error handling and retry logic within the CrewWorker function to handle transient errors.
