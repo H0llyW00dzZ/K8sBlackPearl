@@ -28,34 +28,36 @@ var mu sync.Mutex
 // SetLogger sets the logger instance for the package in a thread-safe manner.
 func SetLogger(logger *zap.Logger) {
 	mu.Lock()
-	defer mu.Unlock()
 	Logger = logger
+	mu.Unlock()
 }
 
 // LogInfoWithEmoji logs an informational message with a given emoji, context, and fields.
 // It checks if the Logger is not nil before logging to prevent panics.
 func LogInfoWithEmoji(emoji string, context string, fields ...zap.Field) {
 	mu.Lock()
-	defer mu.Unlock()
+	logger := Logger
+	mu.Unlock()
 
-	if Logger == nil {
+	if logger == nil {
 		fmt.Printf(language.ErrorLoggerIsNotSet, context)
 		return
 	}
-	Logger.Info(emoji+" "+context, fields...)
+	logger.Info(emoji+" "+context, fields...)
 }
 
 // logErrorWithEmoji logs an error message with a given emoji, context, and fields.
 // It checks if the Logger is not nil before logging to prevent panics.
 func LogErrorWithEmoji(emoji string, context string, fields ...zap.Field) {
 	mu.Lock()
-	defer mu.Unlock()
+	logger := Logger
+	mu.Unlock()
 
-	if Logger == nil {
+	if logger == nil {
 		fmt.Printf(language.ErrorLoggerIsNotSet, context)
 		return
 	}
-	Logger.Error(emoji+" "+context, fields...)
+	logger.Error(emoji+" "+context, fields...)
 }
 
 // WithAnyZapField creates a LogFieldOption that encapsulates a zap.Field for deferred addition to a log entry.
