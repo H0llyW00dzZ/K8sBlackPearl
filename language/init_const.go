@@ -21,6 +21,8 @@ const (
 	ContextCancelled       = "Context cancelled"
 	ErrorDuringTaskAttempt = "Error during task, attempt %d/%d: %v"
 	UnknownTaskType        = "unknown task type: %s"
+	InvalidParameters      = "invalid parameters"
+	InvalidparametersL     = "invalid parameters: labelSelector, fieldSelector, or limit"
 )
 
 const (

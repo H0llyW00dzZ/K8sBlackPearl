@@ -19,6 +19,22 @@ This repository is the continuation of development from [`WorkerK8S`](https://pk
 
 In real-world applications, the complexity and cost can escalate quickly. `K8sBlackPearl` was created as an in-house solution, written in Go, to streamline Kubernetes management and reduce operational expenses. Building on the foundation of `WorkerK8S`, aiming to provide a more efficient and cost-effective tool, with a simplified interface for Kubernetes cluster management.
 
+### Example Configuration Tasks
+
+```json
+[
+    {
+        "name": "list-specific-pods",
+        "type": "GetPods",
+        "parameters": {
+            "labelSelector": "app=nginx",
+            "fieldSelector": "status.phase=Running",
+            "limit": 10
+        }
+    }
+]
+```
+
 # TODO
 
 - [x] Implement error handling and retry logic within the CrewWorker function to handle transient errors.
