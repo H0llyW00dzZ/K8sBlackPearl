@@ -57,7 +57,7 @@ func LogErrorWithEmoji(emoji string, context string, fields ...zap.Field) {
 		fmt.Printf(language.ErrorLoggerIsNotSet, context)
 		return
 	}
-	logger.Error(emoji+" "+context, fields...)
+	logger.Info(emoji+" "+context, fields...)
 }
 
 // WithAnyZapField creates a LogFieldOption that encapsulates a zap.Field for deferred addition to a log entry.
