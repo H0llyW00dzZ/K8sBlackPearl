@@ -23,5 +23,8 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 
 - [x] Implement error handling and retry logic within the CrewWorker function to handle transient errors.
 - [ ] Enhance the CrewWorker function to perform a more specific task or to be more configurable.
+  - The current `CrewGetPodsTaskRunner.Run` method performs a specific task of listing pods, but there's no indication of enhanced configurability or the ability to perform a more specific task.
+
 - [ ] Expand the package to support other Kubernetes resources and operations.
+
 - [ ] Introduce metrics collection for monitoring the health and performance of the workers.
