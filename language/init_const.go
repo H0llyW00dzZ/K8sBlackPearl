@@ -23,6 +23,7 @@ const (
 	UnknownTaskType        = "unknown task type: %s"
 	InvalidParameters      = "invalid parameters"
 	InvalidparametersL     = "invalid parameters: labelSelector, fieldSelector, or limit"
+	ErrorPodsCancelled     = "Pod processing was cancelled."
 )
 
 const (

@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
@@ -26,7 +27,69 @@ import (
 func logPods(fields []zap.Field, podList *corev1.PodList) {
 	navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, language.PodsFetched, append(fields, zap.Int(language.WorkerCountPods, len(podList.Items)))...)
 	for _, pod := range podList.Items {
-		podFields := append(fields, zap.String("PodName", pod.Name), zap.String("PodStatus", string(pod.Status.Phase)))
+		podFields := append(fields, zap.String(language.PodsName, pod.Name), zap.String(language.PodStatus, string(pod.Status.Phase)))
 		navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, fmt.Sprintf(language.ProcessingPods, pod.Name), podFields...)
+	}
+}
+
+// checkPodsHealth spawns a goroutine to check the health of each pod in the provided list.
+// It sends the health status messages to a channel which can be used for further processing.
+//
+// Parameters:
+//   - ctx: The context to control the cancellation of the health check operation.
+//   - podList: A pointer to a corev1.PodList containing the pods to be checked.
+//
+// Returns:
+//   - A channel of strings, where each string is a message about a pod's health status.
+//
+// The function creates a channel to send the health status messages. It then iterates over
+// each pod, checks its health, and sends a status message to the channel. If the context
+// is cancelled, the function stops processing and exits the goroutine.
+func (c *CrewProcessCheckHealthTask) checkPodsHealth(ctx context.Context, podList *corev1.PodList) chan string {
+	results := make(chan string, len(podList.Items))
+	go func() {
+		defer close(results)
+		for _, pod := range podList.Items {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				healthStatus := language.NotHealthyStatus
+				if CrewCheckingisPodHealthy(&pod) {
+					healthStatus = language.HealthyStatus
+				}
+				statusMsg := fmt.Sprintf(language.PodAndStatusAndHealth, pod.Name, pod.Status.Phase, healthStatus)
+				results <- statusMsg
+			}
+		}
+	}()
+	return results
+}
+
+// logResults listens on a channel for pod health status messages and logs them.
+// It continues to log messages until the channel is closed or the context is cancelled.
+//
+// Parameters:
+//   - ctx: The context to control the cancellation of the logging operation.
+//   - results: A channel of strings containing the health status messages of pods.
+//
+// Returns:
+//   - An error if the context is cancelled, indicating that logging was not completed.
+//
+// The function selects on the context's Done channel and the results channel.
+// If the context is cancelled, it logs an error message and returns the context's error.
+// Otherwise, it logs the health status messages until the results channel is closed.
+func (c *CrewProcessCheckHealthTask) logResults(ctx context.Context, results chan string) error {
+	for {
+		select {
+		case <-ctx.Done():
+			navigator.LogErrorWithEmoji(constant.ModernGopherEmoji, language.ErrorPodsCancelled, zap.Error(ctx.Err()))
+			return ctx.Err()
+		case result, ok := <-results:
+			if !ok {
+				return nil // Channel closed, all results processed.
+			}
+			navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, result)
+		}
 	}
 }
