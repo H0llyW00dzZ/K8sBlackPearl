@@ -57,7 +57,7 @@ func LogErrorWithEmoji(emoji string, context string, fields ...zap.Field) {
 		fmt.Printf(language.ErrorLoggerIsNotSet, context)
 		return
 	}
-	logger.Error(emoji+" "+context, fields...)
+	logger.Info(emoji+" "+context, fields...)
 }
 
 // WithAnyZapField creates a LogFieldOption that encapsulates a zap.Field for deferred addition to a log entry.
@@ -82,13 +82,13 @@ func WithAnyZapField(field zap.Field) LogFieldOption {
 
 // createLogFields creates a slice of zap.Field with the operation and additional info.
 // It can be used to add structured context to logs.
-func CreateLogFields(sailing string, shipsnamespace string, infos ...string) []zap.Field {
+func CreateLogFields(sailing string, shipsnamespace string, fieldOpts ...LogFieldOption) []zap.Field {
 	fields := []zap.Field{
 		zap.String("sailing", sailing),
 		zap.String("shipsnamespace", shipsnamespace),
 	}
-	for i, info := range infos {
-		fields = append(fields, zap.String(fmt.Sprintf("info%d", i+1), info))
+	for _, opt := range fieldOpts {
+		fields = append(fields, opt())
 	}
 	return fields
 }
