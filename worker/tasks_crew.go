@@ -9,8 +9,6 @@ import (
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
-	"go.uber.org/zap"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -70,24 +68,21 @@ type CrewGetPodsTaskRunner struct{}
 // Run lists all pods in the specified namespace and logs each pod's name and status.
 // It uses the provided Kubernetes clientset and context to interact with the Kubernetes cluster.
 func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, parameters map[string]interface{}) error {
-	// List all pods in the shipsnamespace using the provided context.
 	fields := navigator.CreateLogFields(language.TaskFetchPods, shipsnamespace)
 	navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, language.FetchingPods, fields...)
 
-	podList, err := clientset.CoreV1().Pods(shipsnamespace).List(ctx, v1.ListOptions{})
+	listOptions, err := getListOptions(parameters)
 	if err != nil {
-		navigator.LogErrorWithEmoji(constant.ModernGopherEmoji, language.WorkerFailedToListPods, fields...)
+		navigator.LogErrorWithEmoji(constant.ModernGopherEmoji, language.InvalidParameters, fields...)
 		return err
 	}
 
-	navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, language.PodsFetched, append(fields, zap.Int(language.WorkerCountPods, len(podList.Items)))...)
-
-	for _, pod := range podList.Items {
-		// Log individual pod name and status.
-		podFields := append(fields, zap.String("PodName", pod.Name), zap.String("PodStatus", string(pod.Status.Phase)))
-		navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, fmt.Sprintf(language.ProcessingPods, pod.Name), podFields...)
+	podList, err := listPods(ctx, clientset, shipsnamespace, listOptions)
+	if err != nil {
+		return err
 	}
 
+	logPods(fields, podList)
 	return nil
 }
 
