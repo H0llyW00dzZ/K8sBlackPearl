@@ -8,7 +8,6 @@ import (
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
-	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -18,46 +17,57 @@ const (
 	retryDelay = 2 * time.Second // Delay between retries
 )
 
-// CrewWorker is responsible for managing a worker process that interacts with Kubernetes.
-// It includes retry logic to handle transient errors that may occur during task execution.
-// The function attempts to perform a given task up to a maximum number of retries (maxRetries),
-// waiting for a specified duration (retryDelay) between each attempt.
-// If the task fails after all retries or if the context is cancelled, it logs an error and
-// sends a final message to the results channel indicating the failure or cancellation.
+// CrewWorker orchestrates the execution of a series of tasks within a Kubernetes namespace.
+// It leverages the performTaskWithRetries function to execute each task with retry logic.
+// Upon encountering an error that persists after retries, it logs the error and communicates
+// the failure through the results channel.
+//
+// Parameters:
+//
+//   - ctx: A context.Context that allows for cancellation and timeout of the worker process.
+//   - clientset: Provides the Kubernetes API client for interacting with the cluster.
+//   - shipsnamespace: The namespace within the Kubernetes cluster to operate upon.
+//   - tasks: A slice of Task structs, each representing a task to be executed.
+//   - results: A channel for sending the results (success or error messages) back to the caller.
 func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, tasks []Task, results chan<- string) {
-	// Iterate over each task and attempt to perform it with retries
 	for _, task := range tasks {
-		// Retry loop for each task
-		for attempt := 0; attempt < maxRetries; attempt++ {
-			// Attempt to perform the task
-			err := performTask(ctx, clientset, shipsnamespace, task)
-			if err == nil {
-				// Task was successful, no need to retry
-				results <- fmt.Sprintf(language.TaskCompleteS, task.Name)
-				break
-			}
-
-			// Log the error with retry attempt information
-			navigator.LogErrorWithEmoji(constant.ErrorEmoji, fmt.Sprintf(language.ErrorDuringTaskAttempt, attempt+1, maxRetries, err), zap.Error(err))
-
-			// Check if the context has been cancelled before continuing
-			if ctx.Err() != nil {
-				navigator.LogErrorWithEmoji(constant.ErrorEmoji, language.ContextCancelled, zap.Error(ctx.Err()))
-				results <- language.ContextCancelled
-				break
-			}
-
-			// Wait for the retry delay before trying again
-			time.Sleep(retryDelay)
-		}
-
-		// Check if all retries have been exhausted
-		if ctx.Err() == nil {
-			finalErrorMessage := fmt.Sprintf(language.ErrorFailedToCompleteTask, task.Name, maxRetries)
-			navigator.LogErrorWithEmoji(constant.ErrorEmoji, finalErrorMessage, zap.String("shipsnamespace", shipsnamespace))
-			results <- finalErrorMessage
+		err := performTaskWithRetries(ctx, clientset, shipsnamespace, task, results)
+		if err != nil {
+			logFinalError(shipsnamespace, task.Name, err)
+			results <- err.Error()
 		}
 	}
+}
+
+// performTaskWithRetries attempts to execute a task multiple times in case of transient failures.
+// It respects the context's cancellation signal and stops retrying if the context is cancelled.
+// If all retries are exhausted without success, it returns an error.
+//
+// Parameters:
+//   - ctx: The context for cancellation and timeout.
+//   - clientset: The Kubernetes API client.
+//   - shipsnamespace: The target namespace for the task execution.
+//   - task: The Task to be executed.
+//   - results: A channel to report the outcome of the task execution.
+//
+// Returns an error if the task could not be completed successfully after all retries.
+func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task Task, results chan<- string) error {
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		err := performTask(ctx, clientset, shipsnamespace, task)
+		if err == nil {
+			results <- fmt.Sprintf(language.TaskCompleteS, task.Name)
+			return nil
+		}
+
+		if ctx.Err() != nil {
+			return fmt.Errorf(language.ContextCancelled)
+		}
+
+		logRetryAttempt(task.Name, attempt, err)
+		time.Sleep(retryDelay)
+	}
+
+	return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, maxRetries)
 }
 
 // CrewProcessPods iterates over a slice of pods, checking the health of each pod.
