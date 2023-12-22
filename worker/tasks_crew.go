@@ -86,6 +86,28 @@ func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.C
 	return nil
 }
 
+// CrewProcessCheckHealthTask is an implementation of TaskRunner that checks the health of each pod
+// in a given Kubernetes namespace and sends the results to a channel.
+type CrewProcessCheckHealthTask struct{}
+
+// Run iterates over the pods in the specified namespace, checks their health status,
+// and sends a formatted status message to the provided results channel.
+// It respects the context's cancellation signal and stops processing if the context is cancelled.
+func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, parameters map[string]interface{}) error {
+	listOptions, err := getListOptions(parameters)
+	if err != nil {
+		return err
+	}
+
+	podList, err := listPods(ctx, clientset, shipsnamespace, listOptions)
+	if err != nil {
+		return err
+	}
+
+	results := c.checkPodsHealth(ctx, podList)
+	return c.logResults(ctx, results)
+}
+
 // performTask runs the specified task by finding the appropriate TaskRunner from the registry
 // and invoking its Run method with the task's parameters.
 func performTask(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task Task) error {
