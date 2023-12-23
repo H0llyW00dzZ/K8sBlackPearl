@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
-	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 )
@@ -15,6 +14,7 @@ import (
 func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []Task, workerCount int) (<-chan string, func()) {
 	results := make(chan string)
 	var wg sync.WaitGroup
+	taskStatus := NewTaskStatusMap() // Create a TaskStatusMap to track task claims.
 
 	// Create a new context that can be cancelled to signal the workers to shutdown.
 	shutdownCtx, cancelFunc := context.WithCancel(ctx)
@@ -26,11 +26,11 @@ func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, sh
 			defer wg.Done()
 
 			// Set up the logger for this worker.
-			workerLogger := navigator.Logger.With(zap.Int(language.CrewWorkerUnit, workerIndex))
-			navigator.SetLogger(workerLogger) // Assuming this is safe to call multiple times and is goroutine-safe.
+			workerLogger := zap.L().With(zap.Int(language.Worker_Name, workerIndex))
+			//navigator.SetLogger(workerLogger) // Already Safe now with tracker
 
-			// Now call CrewWorker with the tasks and the logger, since it will use the package-level Logger.
-			CrewWorker(shutdownCtx, clientset, shipsNamespace, tasks, results)
+			// Now call CrewWorker with the tasks, results channel, and taskStatus.
+			CrewWorker(shutdownCtx, clientset, shipsNamespace, tasks, results, workerLogger, taskStatus)
 		}(i)
 	}
 

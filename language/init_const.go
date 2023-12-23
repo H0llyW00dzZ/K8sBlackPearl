@@ -51,6 +51,7 @@ const (
 	TaskNumber        = "The number of workers and the number of tasks do not match."
 	RunningTaskBackup = "Running BackupTaskRunner with parameters:"
 	Task_Name         = "task_name"
+	Worker_Name       = "worker"
 )
 
 const (
