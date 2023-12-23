@@ -10,20 +10,21 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// listPods retrieves a list of Pods from a specified namespace using the provided list options.
-// This function abstracts the call to the Kubernetes API to fetch the Pods, making the
-// main logic of the task runner more concise and focused.
+// listPods retrieves a list of Pods from the specified namespace using the provided list options.
+// This function abstracts the Kubernetes API call to fetch Pods, simplifying the task runner's
+// main logic. The list options can include selectors to filter the Pods by labels, fields, and more.
 //
 // Parameters:
 //
-//   - ctx: The context.Context object, which allows for cancellation and deadlines.
+//   - ctx: A context.Context object, which governs the lifetime of the request to the Kubernetes API.
+//     It can be used to cancel the request, set deadlines, or pass request-scoped values.
 //   - clientset: A *kubernetes.Clientset that provides access to the Kubernetes API.
-//   - shipsnamespace: The namespace from which to list the Pods. Namespaces are a way to divide cluster resources.
-//   - listOptions: v1.ListOptions that define the conditions and limits for the API query, such as label selectors.
+//   - namespace: A string specifying the namespace from which to list the Pods. Namespaces are a way to divide cluster resources.
+//   - listOptions: A v1.ListOptions struct that defines the conditions and limits for the API query, such as label and field selectors.
 //
 // Returns:
 //
-//   - A pointer to a corev1.PodList containing the list of Pods that match the list options.
+//   - A pointer to a corev1.PodList containing the Pods that match the list options, along with metadata about the list.
 //   - An error if the call to the Kubernetes API fails, otherwise nil.
 func listPods(ctx context.Context, clientset *kubernetes.Clientset, namespace string, listOptions v1.ListOptions) (*corev1.PodList, error) {
 	pods, err := clientset.CoreV1().Pods(namespace).List(ctx, listOptions)
