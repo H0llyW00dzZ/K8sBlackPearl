@@ -17,4 +17,7 @@ func init() {
 	// Registers a TaskRunner for an alternate method of retrieving Kubernetes pods.
 	RegisterTaskRunner("CrewGetPodsTaskRunner", func() TaskRunner { return &CrewGetPodsTaskRunner{} })
 
+	// Registers a TaskRunner for labeling Kubernetes pods.
+	RegisterTaskRunner("CrewWriteLabelPods", func() TaskRunner { return &CrewLabelPodsTaskRunner{} })
+
 }

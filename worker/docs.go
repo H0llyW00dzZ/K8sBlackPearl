@@ -5,6 +5,17 @@
 // The package is intended for applications running as pods within Kubernetes clusters
 // and leverages in-cluster configuration to establish a clientset for API interactions.
 //
+// Enhancements in the latest version:
+//
+//   - Structured logging has been integrated throughout the package, providing clear
+//     and consistent logging messages that are easier to read and debug. Logging now
+//     includes emojis for quick visual parsing and additional context such as task names
+//     and worker indices.
+//
+//   - The dynamic task execution model allows for registering and retrieving TaskRunner
+//     implementations based on task types. This extensibility makes it possible to easily
+//     add new task handling logic without modifying the core package code.
+//
 // # Functions
 //
 //   - NewKubernetesClient: Creates a new Kubernetes clientset configured for in-cluster
@@ -56,6 +67,9 @@
 //
 //   - Logging functionality is customizable, allowing different workers to provide
 //     unique contextual information, such as worker indices or specific namespaces.
+//
+//   - The dynamic task execution model supports adding new tasks and task runners
+//     without changing existing code, facilitating scalability and extensibility.
 //
 // # TODO
 //

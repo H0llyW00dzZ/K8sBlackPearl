@@ -8,6 +8,7 @@ import (
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
+	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 )
@@ -131,6 +132,44 @@ func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kuberne
 
 	results := c.checkPodsHealth(ctx, podList)
 	return c.logResults(ctx, results)
+}
+
+// CrewLabelPodsTaskRunner is an implementation of TaskRunner that labels all pods
+// in a given Kubernetes namespace with a specific label.
+type CrewLabelPodsTaskRunner struct {
+	workerIndex int
+}
+
+// CrewLabelPodsTaskRunner is an implementation of the TaskRunner interface that applies a set of labels
+// to all pods within a given Kubernetes namespace. It is responsible for parsing the label parameters,
+// invoking the labeling operation, and logging the process. The Run method orchestrates these steps,
+// handling any errors that occur during the execution and ensuring that the task's intent is
+// fulfilled effectively.
+func (c *CrewLabelPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+	fields := navigator.CreateLogFields(
+		language.TaskLabelPods,
+		shipsnamespace,
+		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+	)
+
+	labelKey, labelValue, err := extractLabelParameters(parameters)
+	if err != nil {
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
+		return err
+	}
+
+	navigator.LogInfoWithEmoji(language.PirateEmoji, fmt.Sprintf(language.StartWritingLabelPods, labelKey, labelValue), fields...)
+
+	err = LabelPods(ctx, clientset, shipsnamespace, labelKey, labelValue)
+	if err != nil {
+		errorFields := append(fields, zap.String(language.Error, err.Error()))
+		failedMessage := fmt.Sprintf("%v %s", constant.ErrorEmoji, language.ErrorFailedToWriteLabel)
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, failedMessage, errorFields...)
+		return err
+	}
+	successMessage := fmt.Sprintf(language.WorkerSucessfully, labelKey, labelValue)
+	navigator.LogInfoWithEmoji(language.PirateEmoji, successMessage, fields...)
+	return nil
 }
 
 // performTask runs the specified task by finding the appropriate TaskRunner from the registry

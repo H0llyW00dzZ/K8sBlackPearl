@@ -2,32 +2,35 @@ package language
 
 // Note: This constant used for translation.
 const (
-	ErrorListingPods        = "error listing pods: %w"
-	ErrorUpdatingPodLabels  = "error updating pod labels: %w"
-	ErrorCreatingPod        = "error creating pod: %w"
-	ErrorDeletingPod        = "error deleting pod: %w"
-	ErrorGettingPod         = "error getting pod: %w"
-	ErrorPodNotFound        = "pod not found"
-	ErrorUpdatingPod        = "Error updating pod: %w"
-	ErrorRetrievingPods     = "Error retrieving pods: %w"
-	PodAndStatus            = "Pod: %s, Status: %s"
-	PodAndStatusAndHealth   = "Pod: %s, Status: %s, Health: %s"
-	errconfig               = "cannot load kubeconfig: %w"
-	cannotcreatek8s         = "cannot create kubernetes client: %w"
-	ErrorLoggerIsNotSet     = "Logger is not set! Cannot log info: %s\n"
-	ErrorLogger             = "cannot create logger: %w"
-	ErrorFailedToComplete   = "Failed to complete task after %d attempts"
-	ContextCancelledAbort   = "Context cancelled, aborting retries."
-	ContextCancelled        = "Context cancelled"
-	ErrorDuringTaskAttempt  = "Error during task, attempt %d/%d: %v"
-	UnknownTaskType         = "unknown task type: %s"
-	InvalidParameters       = "invalid parameters"
-	InvalidparametersL      = "invalid parameters: labelSelector, fieldSelector, or limit"
-	ErrorPodsCancelled      = "Pod processing was cancelled."
-	ErrorPailedtoListPods   = "Failed to list pods: %w"
-	ErrorParamLabelSelector = "parameter 'labelSelector' is required and must be a string"
-	ErrorParamFieldSelector = "parameter 'fieldSelector' is required and must be a string"
-	ErrorParamLimit         = "parameter 'limit' is required and must be an integer"
+	ErrorListingPods         = "error listing pods: %w"
+	ErrorUpdatingPodLabels   = "error updating pod labels: %w"
+	ErrorCreatingPod         = "error creating pod: %w"
+	ErrorDeletingPod         = "error deleting pod: %w"
+	ErrorGettingPod          = "error getting pod: %w"
+	ErrorPodNotFound         = "pod not found"
+	ErrorUpdatingPod         = "Error updating pod: %w"
+	ErrorRetrievingPods      = "Error retrieving pods: %w"
+	PodAndStatus             = "Pod: %s, Status: %s"
+	PodAndStatusAndHealth    = "Pod: %s, Status: %s, Health: %s"
+	errconfig                = "cannot load kubeconfig: %w"
+	cannotcreatek8s          = "cannot create kubernetes client: %w"
+	ErrorLoggerIsNotSet      = "Logger is not set! Cannot log info: %s\n"
+	ErrorLogger              = "cannot create logger: %w"
+	ErrorFailedToComplete    = "Failed to complete task after %d attempts"
+	ContextCancelledAbort    = "Context cancelled, aborting retries."
+	ContextCancelled         = "Context cancelled"
+	ErrorDuringTaskAttempt   = "Error during task, attempt %d/%d: %v"
+	UnknownTaskType          = "unknown task type: %s"
+	InvalidParameters        = "invalid parameters"
+	InvalidparametersL       = "invalid parameters: labelSelector, fieldSelector, or limit"
+	ErrorPodsCancelled       = "Pod processing was cancelled."
+	ErrorPailedtoListPods    = "Failed to list pods: %w"
+	ErrorParamLabelSelector  = "parameter 'labelSelector' is required and must be a string"
+	ErrorParamFieldSelector  = "parameter 'fieldSelector' is required and must be a string"
+	ErrorParamLimit          = "parameter 'limit' is required and must be an integer"
+	ErrorParamLabelKey       = "parameter 'labelKey' is required and must be a string"
+	ErrorParamLabelabelValue = "parameter 'labelValue' is required and must be a string"
+	ErrorFailedToWriteLabel  = "Failed to write label pods"
 )
 
 const (
@@ -60,6 +63,7 @@ const (
 	RunningTaskBackup = "Running BackupTaskRunner with parameters:"
 	Task_Name         = "task_name"
 	Worker_Name       = "crew_worker"
+	TaskLabelPods     = "WriteLabelPods"
 )
 
 const (
@@ -72,6 +76,8 @@ const (
 	WorkerCountPods              = "Count pods"
 	WorkerCheckingHealth         = "Checking health pods"
 	CrewWorkerUnit               = "crew_worker_unit"
+	StartWritingLabelPods        = "Starting to writing label pods with %s=%s"
+	WorkerSucessfully            = "Successfully labeled pods %v=%s"
 )
 
 const (
@@ -86,6 +92,7 @@ const (
 const (
 	Attempt     = "attempt"
 	Max_Retries = "max_retries"
+	Error       = "error"
 )
 
 const (

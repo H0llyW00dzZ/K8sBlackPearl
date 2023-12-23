@@ -106,16 +106,24 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 - [x] **Error Handling and Retry Logic**: Successfully integrated error handling and retry mechanisms within the `CrewWorker` function to manage transient errors gracefully.
 
 - [ ] **Function Versatility and Configurability**: 
-  - Enhance the versatility of the `CrewWorker` function. It currently processes tasks in a generic manner, but it could be extended to handle a wider variety of tasks with different complexities.
-  - Improve the configurability of task processing. The `CrewGetPodsTaskRunner.Run` method is specialized in listing pods; however, it should be adaptable to accommodate different parameters and settings for various task types.
+  - ~~Enhance the versatility of the `CrewWorker` function. It currently processes tasks in a generic manner, but it could be extended to handle a wider variety of tasks with different complexities.~~
+  - ~~Improve the configurability of task processing. The `CrewGetPodsTaskRunner.Run` method is specialized in listing pods; however, it should be adaptable to accommodate different parameters and settings for various task types.~~
+  - Plan to enhance the versatility of the `CrewWorker` function to handle tasks with varying complexities, not limited to pod health checks.
+  - Aim to improve the configurability of task processing to allow `CrewWorker` and other related functions to accommodate different parameters and settings for a variety of task types.
+
+## Structured Logging Integration
+- [x] **Structured Logging**: Integrated structured logging throughout the package, providing clear and consistent logs with additional context for debugging.
+
+## Task Execution Model
+- [x] **Dynamic Task Execution Model**: Implemented a dynamic task execution model that allows for registering and retrieving `TaskRunner` implementations based on task types, enhancing extensibility.
 
 ## Package Extension
 - [ ] **Support for Additional Kubernetes Resources**:
-  - Develop the capability to manage and interact with a broader range of Kubernetes resources beyond pods, such as services, deployments, and stateful sets.
-  - Implement operations that cater to specific resource requirements, enabling a more comprehensive management toolset within the Kubernetes ecosystem.
+  - Develop the capability to manage and interact with a broader range of Kubernetes resources, including services, deployments, and stateful sets.
+  - Plan to implement operations that cater to specific resource requirements, enabling a more comprehensive management toolset within the Kubernetes ecosystem.
 
 ## Monitoring and Metrics
 - [ ] **Metrics Collection Framework**:
   - Design and integrate a metrics collection system to monitor the health and efficiency of the worker processes.
   - Metrics should provide insights into the success rates of tasks, resource usage, processing times, and error rates.
-  - Consider using existing monitoring tools that can be integrated with Kubernetes to streamline the collection and visualization of metrics.
+  - Explore the possibility of leveraging existing monitoring tools that can be integrated with Kubernetes for streamlined metrics collection and visualization.
