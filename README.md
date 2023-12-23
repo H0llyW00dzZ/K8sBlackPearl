@@ -87,6 +87,9 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 
 
 ```
+> [!WARNING]
+> When using multiple workers, ensure that each task has a unique name. This is important for proper concurrency control when using goroutines alongside sync.Mutex and dependency injection. If all tasks have the same name, regardless of the number of workers configured (e.g, you use 1337 worker), only one goroutine may be spawned due to name confusion in task management.
+
 
 # Additonal Note
 
