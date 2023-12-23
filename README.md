@@ -10,6 +10,7 @@
 # K8sBlackPearl 🏴‍☠️
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/H0llyW00dzZ/K8sBlackPearl)](https://goreportcard.com/report/github.com/H0llyW00dzZ/K8sBlackPearl)
+[![Go Reference](https://pkg.go.dev/badge/github.com/H0llyW00dzZ/K8sBlackPearl.svg)](https://pkg.go.dev/github.com/H0llyW00dzZ/K8sBlackPearl)
 
 ### Shall We have Drink ?
 
