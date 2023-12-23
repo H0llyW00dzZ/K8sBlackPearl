@@ -17,18 +17,21 @@ const (
 	retryDelay = 2 * time.Second // Delay between retries
 )
 
-// CrewWorker orchestrates the execution of a series of tasks within a Kubernetes namespace.
-// It leverages the performTaskWithRetries function to execute each task with retry logic.
-// Upon encountering an error that persists after retries, it logs the error and communicates
-// the failure through the results channel.
+// CrewWorker orchestrates the execution of tasks within a Kubernetes namespace.
+// It utilizes performTaskWithRetries to attempt each task with built-in retry logic.
+// If a task fails after the maximum number of retries, it logs the error and sends
+// a failure message through the results channel. Tasks are claimed to prevent duplicate
+// executions, and they can be released if necessary for subsequent retries.
 //
 // Parameters:
-//
-//   - ctx: A context.Context that allows for cancellation and timeout of the worker process.
-//   - clientset: Provides the Kubernetes API client for interacting with the cluster.
-//   - shipsnamespace: The namespace within the Kubernetes cluster to operate upon.
-//   - tasks: A slice of Task structs, each representing a task to be executed.
-//   - results: A channel for sending the results (success or error messages) back to the caller.
+//   - ctx: Context for cancellation and timeout of the worker process.
+//   - clientset: Kubernetes API client for cluster interactions.
+//   - shipsNamespace: Namespace in Kubernetes for task operations.
+//   - tasks: List of Task structs, each representing an executable task.
+//   - results: Channel to return execution results to the caller.
+//   - logger: Logger for structured logging within the worker.
+//   - taskStatus: Map to track and control the status of tasks.
+//   - workerIndex: Identifier for the worker instance for logging.
 func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []Task, results chan<- string, logger *zap.Logger, taskStatus *TaskStatusMap, workerIndex int) {
 	for _, task := range tasks {
 		// Try to claim the task. If it's already claimed, skip it.
@@ -49,18 +52,21 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNames
 	}
 }
 
-// performTaskWithRetries attempts to execute a task multiple times in case of transient failures.
-// It respects the context's cancellation signal and stops retrying if the context is cancelled.
-// If all retries are exhausted without success, it returns an error.
+// performTaskWithRetries tries to execute a task, with retries on failure.
+// It honors the cancellation signal from the context and ceases retry attempts
+// if the context is cancelled. If the task remains incomplete after all retries,
+// it returns an error detailing the failure.
 //
 // Parameters:
-//   - ctx: The context for cancellation and timeout.
-//   - clientset: The Kubernetes API client.
-//   - shipsnamespace: The target namespace for the task execution.
-//   - task: The Task to be executed.
-//   - results: A channel to report the outcome of the task execution.
+//   - ctx: Context for task cancellation and timeouts.
+//   - clientset: Kubernetes API client for executing tasks.
+//   - shipsNamespace: Kubernetes namespace for task execution.
+//   - task: Task to be executed.
+//   - results: Channel for reporting task execution results.
+//   - workerIndex: Index of the worker for contextual logging.
 //
-// Returns an error if the task could not be completed successfully after all retries.
+// Returns:
+//   - error: Error if the task fails after all retry attempts.
 func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task Task, results chan<- string, workerIndex int) error {
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		err := performTask(ctx, clientset, shipsnamespace, task, workerIndex)
@@ -94,9 +100,10 @@ func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset
 	return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, maxRetries)
 }
 
-// CrewProcessPods iterates over a slice of pods, checking the health of each pod.
-// It sends a formatted status string to the results channel for each pod.
-// If the context is cancelled during processing, it logs the cancellation and sends a cancellation message.
+// CrewProcessPods iterates over a list of pods to evaluate their health.
+// It sends a health status message for each pod to the results channel.
+// If the context is cancelled during the process, it logs the cancellation
+// and sends a corresponding message through the results channel.
 func CrewProcessPods(ctx context.Context, pods []corev1.Pod, results chan<- string) {
 	for _, pod := range pods {
 		select {
@@ -125,8 +132,14 @@ func CrewProcessPods(ctx context.Context, pods []corev1.Pod, results chan<- stri
 	}
 }
 
-// CrewCheckingisPodHealthy determines the health of a given pod by checking its phase
-// and the readiness of its containers. It returns true if the pod is healthy, false otherwise.
+// CrewCheckingisPodHealthy assesses a pod's health by its phase and container readiness.
+// It returns true if the pod is in the running phase and all its containers are ready.
+//
+// Parameters:
+//   - pod: The pod to check for health status.
+//
+// Returns:
+//   - bool: True if the pod is considered healthy, false otherwise.
 func CrewCheckingisPodHealthy(pod *corev1.Pod) bool {
 	// Check if the pod is in the running phase.
 	if pod.Status.Phase != corev1.PodRunning {
