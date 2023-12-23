@@ -20,7 +20,7 @@ func logRetryAttempt(taskName string, attempt int, err error) {
 	navigator.LogErrorWithEmoji(
 		constant.ErrorEmoji,
 		fmt.Sprintf(language.ErrorDuringTaskAttempt, attempt+1, maxRetries, err),
-		zap.String("TaskName", taskName),
+		zap.String(language.Task_Name, taskName),
 		zap.Error(err),
 	)
 }
@@ -37,8 +37,8 @@ func logFinalError(shipsnamespace string, taskName string, err error) {
 	navigator.LogErrorWithEmoji(
 		constant.ErrorEmoji,
 		finalErrorMessage,
-		zap.String("shipsnamespace", shipsnamespace),
-		zap.String("TaskName", taskName),
+		zap.String(language.Ships_Namespace, shipsnamespace),
+		zap.String(language.Task_Name, taskName),
 		zap.Error(err),
 	)
 }

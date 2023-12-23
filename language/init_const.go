@@ -49,6 +49,7 @@ const (
 	TaskDeletePod     = "DeletePod"
 	TaskCompleteS     = "Task '%s' completed successfully."
 	RunningTaskBackup = "Running BackupTaskRunner with parameters:"
+	Task_Name         = "task_name"
 )
 
 const (
@@ -65,4 +66,8 @@ const (
 const (
 	ErrorFailedToCompleteTask = "Failed to complete task %s after %d attempts"
 	RetryingTask              = "Retrying task %d/%d"
+)
+
+const (
+	Ships_Namespace = "ships_namespace"
 )
