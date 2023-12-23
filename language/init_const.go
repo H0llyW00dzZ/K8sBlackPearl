@@ -76,7 +76,7 @@ const (
 
 const (
 	ErrorFailedToCompleteTask = "Failed to complete task %s after %d attempts"
-	RetryingTask              = "Retrying task %d/%d"
+	RetryingTask              = "Error during task, Retrying task %d/%d"
 )
 
 const (
