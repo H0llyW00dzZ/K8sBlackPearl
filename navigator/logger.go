@@ -3,9 +3,11 @@ package navigator
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"go.uber.org/zap"
+	"golang.org/x/time/rate"
 )
 
 // LogFieldOption is a type that represents a function which returns a zap.Field.
@@ -24,6 +26,45 @@ var Logger *zap.Logger
 
 // mu is used to protect access to the Logger variable to make it safe for concurrent use.
 var mu sync.Mutex
+
+// logLimiter controls the rate of log output.
+var logLimiter *rate.Limiter
+
+// Initialize the rate limiter with a limit of 1 event per second and a burst size of 5.
+func init() {
+	logLimiter = rate.NewLimiter(rate.Every(time.Second), 5)
+}
+
+// tryLog attempts to log a message if the rate limiter allows it.
+func tryLog(logFunc func(string, ...zap.Field), emoji string, context string, fields ...zap.Field) {
+	if logLimiter.Allow() {
+		logFunc(emoji+" "+context, fields...)
+	}
+}
+
+// LogInfoWithEmojiRateLimited logs an informational message with rate limiting.
+func LogInfoWithEmojiRateLimited(emoji string, context string, fields ...zap.Field) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if Logger == nil {
+		fmt.Printf(language.ErrorLoggerIsNotSet, context)
+		return
+	}
+	tryLog(Logger.Info, emoji, context, fields...)
+}
+
+// LogErrorWithEmojiRateLimited logs an error message with rate limiting.
+func LogErrorWithEmojiRateLimited(emoji string, context string, fields ...zap.Field) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if Logger == nil {
+		fmt.Printf(language.ErrorLoggerIsNotSet, context)
+		return
+	}
+	tryLog(Logger.Error, emoji, context, fields...)
+}
 
 // SetLogger sets the logger instance for the package in a thread-safe manner.
 func SetLogger(logger *zap.Logger) {
