@@ -37,7 +37,8 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 
 > [!NOTE]  
 > Support Multiple-Task and currently only stable with 1 worker
-> Example:
+
+#### Example:
 
 ```go
 
@@ -82,7 +83,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 
 ```
 
-#### Additonal Note
+# Additonal Note
 
 > [!NOTE]  
 > This still development, there is no configuration/setup, or docs for how to run it unless you are expert in GO.
