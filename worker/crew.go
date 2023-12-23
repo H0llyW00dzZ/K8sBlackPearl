@@ -30,12 +30,22 @@ const (
 //   - shipsnamespace: The namespace within the Kubernetes cluster to operate upon.
 //   - tasks: A slice of Task structs, each representing a task to be executed.
 //   - results: A channel for sending the results (success or error messages) back to the caller.
-func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, tasks []Task, results chan<- string) {
+func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []Task, results chan<- string, logger *zap.Logger, taskStatus *TaskStatusMap) {
 	for _, task := range tasks {
-		err := performTaskWithRetries(ctx, clientset, shipsnamespace, task, results)
+		// Try to claim the task. If it's already claimed, skip it.
+		if !taskStatus.Claim(task.Name) {
+			continue
+		}
+
+		err := performTaskWithRetries(ctx, clientset, shipsNamespace, task, results)
 		if err != nil {
-			logFinalError(shipsnamespace, task.Name, err)
+			// If the task fails, you can choose to release it for retrying.
+			taskStatus.Release(task.Name)
+			logFinalError(shipsNamespace, task.Name, err)
 			results <- err.Error()
+		} else {
+			// If the task is successful, it remains claimed to prevent retries.
+			results <- fmt.Sprintf(language.TaskCompleteS, task.Name)
 		}
 	}
 }
