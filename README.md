@@ -35,6 +35,53 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 ]
 ```
 
+> [!NOTE]  
+> Support Multiple-Task and currently only stable with 1 worker
+> Example:
+
+```go
+
+	// Define the namespace and number of workers.
+	shipsNamespace := "default" // Replace with your namespace
+	workerCount := 1            // Number of workers you want to start
+
+	// Define the tasks to be processed by the workers.
+	tasks := []worker.Task{
+		{
+			Name: "check pods running 1",
+			Type: "CrewGetPodsTaskRunner",
+			Parameters: map[string]interface{}{
+				"labelSelector": "app=nginx",
+				"fieldSelector": "status.phase=Running",
+				"limit":         10,
+			},
+		},
+    		{
+			Name: "check pods running 2",
+			Type: "CrewGetPodsTaskRunner",
+			Parameters: map[string]interface{}{
+				"labelSelector": "app=nginx",
+				"fieldSelector": "status.phase=Running",
+				"limit":         10,
+			},
+		},
+    		{
+			Name: "check pods running 3",
+			Type: "CrewGetPodsTaskRunner",
+			Parameters: map[string]interface{}{
+				"labelSelector": "app=nginx",
+				"fieldSelector": "status.phase=Running",
+				"limit":         10,
+			},
+		},
+	}
+
+	// Start workers.
+	results, shutdown := worker.CaptainTellWorkers(ctx, clientset, shipsNamespace, tasks, workerCount)
+
+
+```
+
 #### Additonal Note
 
 > [!NOTE]  
