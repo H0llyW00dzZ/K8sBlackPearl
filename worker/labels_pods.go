@@ -11,6 +11,18 @@ import (
 )
 
 // LabelPods sets a specific label on all pods within the specified namespace that do not already have it.
+// This function iterates over all pods in the namespace and delegates the labeling of each individual pod
+// to the labelSinglePod function.
+//
+// Parameters:
+//   - ctx: A context.Context for managing cancellation and deadlines.
+//   - clientset: A *kubernetes.Clientset instance used to interact with the Kubernetes API.
+//   - namespace: The namespace in which the pods are located.
+//   - labelKey: The key of the label to be added or updated.
+//   - labelValue: The value for the label.
+//
+// Returns:
+//   - An error if listing pods or updating any pod's labels fails.
 func LabelPods(ctx context.Context, clientset *kubernetes.Clientset, namespace, labelKey, labelValue string) error {
 	// Retrieve a list of all pods in the given namespace using the provided context.
 	pods, err := clientset.CoreV1().Pods(namespace).List(ctx, v1.ListOptions{})
@@ -28,6 +40,19 @@ func LabelPods(ctx context.Context, clientset *kubernetes.Clientset, namespace, 
 }
 
 // labelSinglePod applies the label to a single pod if it doesn't already have it.
+// This function checks the existing labels of the pod and only performs an update
+// if the label is not already set to the desired value.
+//
+// Parameters:
+//   - ctx: A context.Context for managing cancellation and deadlines.
+//   - clientset: A *kubernetes.Clientset instance used to interact with the Kubernetes API.
+//   - pod: A pointer to the corev1.Pod instance to label.
+//   - namespace: The namespace in which the pod is located.
+//   - labelKey: The key of the label to be added or updated.
+//   - labelValue: The value for the label.
+//
+// Returns:
+//   - An error if the pod's labels cannot be updated.
 func labelSinglePod(ctx context.Context, clientset *kubernetes.Clientset, pod *corev1.Pod, namespace, labelKey, labelValue string) error {
 	// If the pod already has the label with the correct value, skip updating.
 	if pod.Labels[labelKey] == labelValue {
