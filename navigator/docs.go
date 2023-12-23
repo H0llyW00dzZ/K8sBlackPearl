@@ -1,50 +1,48 @@
-// Package navigator provides logging functionality to the K8sBlackPearl project.
-// It utilizes the uber-go/zap logging library to provide structured, leveled, and
-// optionally emoji-prefixed logging capabilities.
+// Package navigator provides structured logging capabilities for the K8sBlackPearl project,
+// leveraging the uber-go/zap library. It offers leveled logging with the option to prefix
+// messages with emojis for enhanced visual distinction.
 //
-// The package exposes a package-level Logger variable that is protected by a mutex
-// to ensure thread-safe access and modification. This Logger must be set using the
-// SetLogger function before any of the logging functions are called. If the Logger
-// is not set, the logging functions will output an error message to standard output.
+// A package-level Logger variable is available and protected by a mutex to ensure safe
+// concurrent access. This Logger should be initialized and set using SetLogger prior to
+// invoking any logging functions. Failing to set the Logger will result in error messages
+// being printed to standard output instead of proper log entries.
 //
-// The LogInfoWithEmoji and LogErrorWithEmoji functions provide a way to log
-// informational and error messages, respectively. They both require an emoji string
-// and a context string as part of the message to add a visual identifier to the logs.
-// These functions also accept a variadic number of zap.Field parameters to include
-// structured data in the log messages.
+// Logging functions such as LogInfoWithEmoji and LogErrorWithEmoji are available for
+// recording informational and error messages, respectively. These functions enhance log
+// messages with emojis and a context string for quick identification. They also support
+// structured logging by accepting a variable number of zap.Field parameters.
 //
-// The CreateLogFields function is a helper that creates a slice of zap.Field from
-// given information strings. This can be used to add consistent structured context
-// to logs across different parts of the application.
+// Helper function CreateLogFields is provided to generate a slice of zap.Field from
+// specified strings, facilitating the inclusion of consistent structured context within
+// logs throughout the application.
 //
 // # Usage
 //
-// Before logging can occur, the Logger must be initialized and set using the
-// SetLogger function. Once set, the LogInfoWithEmoji and LogErrorWithEmoji functions
-// can be used to log messages with structured data.
+// The Logger must be initialized and set using SetLogger before any logging activity.
+// Subsequently, LogInfoWithEmoji and LogErrorWithEmoji can be employed for logging
+// messages with structured context.
 //
 // Example:
 //
-//	// Initialize the Logger (typically done at application start)
+//	// Initialize the Logger (usually at the start of the application)
 //	logger, _ := zap.NewProduction()
 //	navigator.SetLogger(logger)
 //
-//	// Use the logging functions
+//	// Logging with the package functions
 //	navigator.LogInfoWithEmoji("🚀", "Application started")
 //	navigator.LogErrorWithEmoji("❗️", "An error occurred", zap.Error(err))
 //
-//	// Create structured log fields
-//	fields := navigator.CreateLogFields("navigation", "starry-sea", "additional info")
+//	// Structuring log fields
+//	fields := navigator.CreateLogFields("navigation", "starry-sea", zap.String("detail", "additional info"))
 //	navigator.LogInfoWithEmoji("🧭", "Navigating the stars", fields...)
 //
-// Note:
-// It is crucial that the SetLogger function is called before any logging functions
-// to avoid nil pointer dereferences. If the Logger is nil when a logging function
-// is called, a message indicating that the Logger is not set will be printed to
-// standard output.
+// Important Note:
+// Ensure that SetLogger is invoked before any logging functions to prevent nil pointer
+// dereferences. If the Logger is nil during a logging attempt, an error message will be
+// printed to standard output indicating the absence of a set Logger.
 //
-// The emoji strings used in the logging functions are purely for visual effect and
-// can be omitted or replaced based on the logging preferences of the application.
+// The use of emoji strings in logging functions is optional and for visual enhancement.
+// These can be excluded or customized according to the application's logging standards.
 //
 // Copyright (c) 2023 H0llyW00dzZ
 package navigator
