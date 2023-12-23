@@ -133,6 +133,19 @@ func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kuberne
 	return c.logResults(ctx, results)
 }
 
+// CrewLabelPodsTaskRunner is an implementation of TaskRunner that labels all pods
+// in a given Kubernetes namespace with a specific label.
+type CrewLabelPodsTaskRunner struct {
+	workerIndex int
+}
+
+// Run labels all pods in the specified namespace with the given label key and value.
+// It uses the provided Kubernetes clientset and context to interact with the Kubernetes cluster.
+func (c *CrewLabelPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+	// not ready yet unless you want to implement it as expert hahaha.
+	return nil
+}
+
 // performTask runs the specified task by finding the appropriate TaskRunner from the registry
 // and invoking its Run method with the task's parameters.
 func performTask(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task Task, workerIndex int) error {
