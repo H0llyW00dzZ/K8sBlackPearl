@@ -30,7 +30,7 @@ const (
 	ErrorParamLimit          = "parameter 'limit' is required and must be an integer"
 	ErrorParamLabelKey       = "parameter 'labelKey' is required and must be a string"
 	ErrorParamLabelabelValue = "parameter 'labelValue' is required and must be a string"
-	ErrorFailedToWriteLabel  = "Failed to write label pods: %v"
+	ErrorFailedToWriteLabel  = "Failed to write label pods"
 )
 
 const (
@@ -77,7 +77,7 @@ const (
 	WorkerCheckingHealth         = "Checking health pods"
 	CrewWorkerUnit               = "crew_worker_unit"
 	StartWritingLabelPods        = "Starting to writing label pods with %s=%s"
-	WorkerSucessfully            = "Successfully labeled pods"
+	WorkerSucessfully            = "Successfully labeled pods %v=%s"
 )
 
 const (
