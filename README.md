@@ -90,10 +90,20 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 
 # TODO
 
-- [x] Implement error handling and retry logic within the CrewWorker function to handle transient errors.
-- [ ] Enhance the CrewWorker function to perform a more specific task or to be more configurable.
-  - The current `CrewGetPodsTaskRunner.Run` method performs a specific task of listing pods, but there's no indication of enhanced configurability or the ability to perform a more specific task.
+## CrewWorker Function Improvements
+- [x] **Error Handling and Retry Logic**: Successfully integrated error handling and retry mechanisms within the `CrewWorker` function to manage transient errors gracefully.
 
-- [ ] Expand the package to support other Kubernetes resources and operations.
+- [ ] **Function Versatility and Configurability**: 
+  - Enhance the versatility of the `CrewWorker` function. It currently processes tasks in a generic manner, but it could be extended to handle a wider variety of tasks with different complexities.
+  - Improve the configurability of task processing. The `CrewGetPodsTaskRunner.Run` method is specialized in listing pods; however, it should be adaptable to accommodate different parameters and settings for various task types.
 
-- [ ] Introduce metrics collection for monitoring the health and performance of the workers.
+## Package Extension
+- [ ] **Support for Additional Kubernetes Resources**:
+  - Develop the capability to manage and interact with a broader range of Kubernetes resources beyond pods, such as services, deployments, and stateful sets.
+  - Implement operations that cater to specific resource requirements, enabling a more comprehensive management toolset within the Kubernetes ecosystem.
+
+## Monitoring and Metrics
+- [ ] **Metrics Collection Framework**:
+  - Design and integrate a metrics collection system to monitor the health and efficiency of the worker processes.
+  - Metrics should provide insights into the success rates of tasks, resource usage, processing times, and error rates.
+  - Consider using existing monitoring tools that can be integrated with Kubernetes to streamline the collection and visualization of metrics.
