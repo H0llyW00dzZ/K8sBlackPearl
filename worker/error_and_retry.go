@@ -17,7 +17,7 @@ import (
 //   - attempt: The current retry attempt number.
 //   - err: The error encountered during the task execution that prompted the retry.
 func logRetryAttempt(taskName string, attempt int, err error) {
-	navigator.LogErrorWithEmoji(
+	navigator.LogErrorWithEmojiRateLimited(
 		constant.ErrorEmoji,
 		fmt.Sprintf(language.ErrorDuringTaskAttempt, attempt+1, maxRetries, err),
 		zap.String(language.Task_Name, taskName),
@@ -34,7 +34,7 @@ func logRetryAttempt(taskName string, attempt int, err error) {
 //   - err: The final error encountered that resulted in the task failure.
 func logFinalError(shipsnamespace string, taskName string, err error) {
 	finalErrorMessage := fmt.Sprintf(language.ErrorFailedToCompleteTask, taskName, maxRetries)
-	navigator.LogErrorWithEmoji(
+	navigator.LogErrorWithEmojiRateLimited(
 		constant.ErrorEmoji,
 		finalErrorMessage,
 		zap.String(language.Ships_Namespace, shipsnamespace),
