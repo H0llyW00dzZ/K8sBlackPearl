@@ -85,7 +85,7 @@ func (c *CrewProcessCheckHealthTask) logResults(ctx context.Context, results cha
 	for {
 		select {
 		case <-ctx.Done():
-			navigator.LogErrorWithEmoji(constant.ModernGopherEmoji, language.ErrorPodsCancelled, zap.Error(ctx.Err()))
+			navigator.LogErrorWithEmojiRateLimited(constant.ModernGopherEmoji, language.ErrorPodsCancelled, zap.Error(ctx.Err()))
 			return ctx.Err()
 		case result, ok := <-results:
 			if !ok {

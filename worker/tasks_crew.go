@@ -82,7 +82,7 @@ func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.C
 
 	listOptions, err := getListOptions(parameters)
 	if err != nil {
-		navigator.LogErrorWithEmoji(constant.ModernGopherEmoji, language.InvalidParameters, fields...)
+		navigator.LogErrorWithEmojiRateLimited(constant.ModernGopherEmoji, language.InvalidParameters, fields...)
 		return err
 	}
 
