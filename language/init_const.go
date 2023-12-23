@@ -48,6 +48,7 @@ const (
 	TaskCreatePod     = "CreatePod"
 	TaskDeletePod     = "DeletePod"
 	TaskCompleteS     = "Task '%s' completed successfully."
+	TaskNumber        = "The number of workers and the number of tasks do not match."
 	RunningTaskBackup = "Running BackupTaskRunner with parameters:"
 	Task_Name         = "task_name"
 )
