@@ -7,7 +7,6 @@ import (
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
-	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -83,7 +82,7 @@ func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset
 			navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
 		)
 		navigator.LogInfoWithEmoji(
-			constant.ModernGopherEmoji,
+			language.PirateEmoji,
 			fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.RetryingTask, attempt+1, maxRetries)),
 			fieldslog...,
 		)
@@ -103,7 +102,7 @@ func CrewProcessPods(ctx context.Context, pods []corev1.Pod, results chan<- stri
 		select {
 		case <-ctx.Done():
 			cancelMsg := fmt.Sprintf(language.WorkerCancelled, ctx.Err())
-			navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, cancelMsg)
+			navigator.LogInfoWithEmoji(language.PirateEmoji, cancelMsg)
 			results <- cancelMsg
 			return
 		default:
@@ -120,7 +119,7 @@ func CrewProcessPods(ctx context.Context, pods []corev1.Pod, results chan<- stri
 				navigator.WithAnyZapField(zap.String(language.Phase, string(pod.Status.Phase))),
 				navigator.WithAnyZapField(zap.String(language.HealthyStatus, healthStatus)),
 			)
-			navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, statusMsg, fields...)
+			navigator.LogInfoWithEmoji(language.PirateEmoji, statusMsg, fields...)
 			results <- statusMsg
 		}
 	}

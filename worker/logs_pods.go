@@ -6,7 +6,6 @@ import (
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
-	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -30,7 +29,7 @@ func logPods(baseFields []zap.Field, podList *corev1.PodList) {
 		podFields := make([]zap.Field, len(baseFields))
 		copy(podFields, baseFields)
 		podFields = append(podFields, zap.String(language.PodsName, pod.Name), zap.String(language.PodStatus, string(pod.Status.Phase)))
-		navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, fmt.Sprintf(language.ProcessingPods, pod.Name), podFields...)
+		navigator.LogInfoWithEmoji(language.PirateEmoji, fmt.Sprintf(language.ProcessingPods, pod.Name), podFields...)
 	}
 }
 
@@ -85,13 +84,13 @@ func (c *CrewProcessCheckHealthTask) logResults(ctx context.Context, results cha
 	for {
 		select {
 		case <-ctx.Done():
-			navigator.LogErrorWithEmojiRateLimited(constant.ModernGopherEmoji, language.ErrorPodsCancelled, zap.Error(ctx.Err()))
+			navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.ErrorPodsCancelled, zap.Error(ctx.Err()))
 			return ctx.Err()
 		case result, ok := <-results:
 			if !ok {
 				return nil // Channel closed, all results processed.
 			}
-			navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, result)
+			navigator.LogInfoWithEmoji(language.PirateEmoji, result)
 		}
 	}
 }
