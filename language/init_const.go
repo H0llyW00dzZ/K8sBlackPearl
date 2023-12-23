@@ -85,5 +85,5 @@ const (
 )
 
 const (
-	PirateEmoji = "🏴‍☠️"
+	PirateEmoji = "🏴‍☠️ "
 )
