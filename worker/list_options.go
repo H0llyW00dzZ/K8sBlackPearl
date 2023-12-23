@@ -20,18 +20,26 @@ import (
 //   - A v1.ListOptions struct initialized with the values from the parameters map.
 //   - An error if any of the required parameters are missing or if the type assertion fails,
 //     indicating invalid or malformed input.
-func getListOptions(parameters map[string]interface{}) (v1.ListOptions, error) {
-	labelSelector, labelOk := parameters["labelSelector"].(string)
-	fieldSelector, fieldOk := parameters["fieldSelector"].(string)
-	limit, limitOk := parameters["limit"].(float64) // JSON numbers are floats.
+func getListOptions(params map[string]interface{}) (v1.ListOptions, error) {
+	listOptions := v1.ListOptions{}
 
-	if !labelOk || !fieldOk || !limitOk {
-		return v1.ListOptions{}, fmt.Errorf(language.InvalidparametersL)
+	labelSelector, ok := params["labelSelector"].(string)
+	if !ok {
+		return listOptions, fmt.Errorf(language.ErrorParamLabelSelector)
 	}
+	listOptions.LabelSelector = labelSelector
 
-	return v1.ListOptions{
-		LabelSelector: labelSelector,
-		FieldSelector: fieldSelector,
-		Limit:         int64(limit),
-	}, nil
+	fieldSelector, ok := params["fieldSelector"].(string)
+	if !ok {
+		return listOptions, fmt.Errorf(language.ErrorParamFieldSelector)
+	}
+	listOptions.FieldSelector = fieldSelector
+
+	limit, ok := params["limit"].(int)
+	if !ok {
+		return listOptions, fmt.Errorf(language.ErrorParamLimit)
+	}
+	listOptions.Limit = int64(limit)
+
+	return listOptions, nil
 }
