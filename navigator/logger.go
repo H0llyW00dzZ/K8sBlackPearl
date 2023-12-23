@@ -3,11 +3,10 @@ package navigator
 import (
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"go.uber.org/zap"
-	"golang.org/x/time/rate"
+	"go.uber.org/zap/zapcore"
 )
 
 // LogFieldOption is a type that represents a function which returns a zap.Field.
@@ -27,14 +26,6 @@ var Logger *zap.Logger
 // mu is used to protect access to the Logger variable to make it safe for concurrent use.
 var mu sync.Mutex
 
-// logLimiter controls the rate of log output.
-var logLimiter *rate.Limiter
-
-// Initialize the rate limiter with a limit of 1 event per second and a burst size of 5.
-func init() {
-	logLimiter = rate.NewLimiter(rate.Every(time.Second), 5)
-}
-
 // tryLog attempts to log a message if the rate limiter allows it.
 func tryLog(logFunc func(string, ...zap.Field), emoji string, context string, fields ...zap.Field) {
 	if logLimiter.Allow() {
@@ -42,8 +33,15 @@ func tryLog(logFunc func(string, ...zap.Field), emoji string, context string, fi
 	}
 }
 
-// LogInfoWithEmojiRateLimited logs an informational message with rate limiting.
-func LogInfoWithEmojiRateLimited(emoji string, context string, fields ...zap.Field) {
+// logMessage logs a message with the provided log function.
+func logMessage(logFunc func(string, ...zap.Field), message string, fields ...zap.Field) {
+	logFunc(message, fields...)
+}
+
+// LogWithEmoji logs a message with a given level, emoji, context, and fields.
+// It checks if the Logger is not nil before logging to prevent panics.
+// The rateLimited flag determines whether the log should be rate limited.
+func LogWithEmoji(level zapcore.Level, emoji string, context string, rateLimited bool, fields ...zap.Field) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -51,19 +49,42 @@ func LogInfoWithEmojiRateLimited(emoji string, context string, fields ...zap.Fie
 		fmt.Printf(language.ErrorLoggerIsNotSet, context)
 		return
 	}
-	tryLog(Logger.Info, emoji, context, fields...)
+
+	if rateLimited && !logLimiter.Allow() {
+		return
+	}
+
+	message := emoji + " " + context
+	logByLevel(level, message, fields...)
+}
+
+// logByLevel logs the message by the appropriate level.
+func logByLevel(level zapcore.Level, message string, fields ...zap.Field) {
+	switch level {
+	case zapcore.InfoLevel:
+		logMessage(Logger.Info, message, fields...)
+	case zapcore.ErrorLevel:
+		// Note: Temporarily, errors are logged at the info level for testing purposes.
+		// This is to ensure visibility during the development phase where the global logger
+		// is shared across multiple tasks and workers. Each worker and their respective tasks
+		// are synchronized to use this logger without conflicts.
+		logMessage(Logger.Info, message, fields...)
+	default:
+		// Output an error message if an unsupported log level is encountered.
+		// The 'Unsupportedloglevel' variable should be defined in the 'language' package
+		// and contain an appropriate error message template.
+		fmt.Printf(language.Unsupportedloglevel, level)
+	}
+}
+
+// LogInfoWithEmojiRateLimited logs an informational message with rate limiting.
+func LogInfoWithEmojiRateLimited(emoji string, context string, fields ...zap.Field) {
+	LogWithEmoji(zapcore.InfoLevel, emoji, context, true, fields...)
 }
 
 // LogErrorWithEmojiRateLimited logs an error message with rate limiting.
 func LogErrorWithEmojiRateLimited(emoji string, context string, fields ...zap.Field) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if Logger == nil {
-		fmt.Printf(language.ErrorLoggerIsNotSet, context)
-		return
-	}
-	tryLog(Logger.Info, emoji, context, fields...)
+	LogWithEmoji(zapcore.ErrorLevel, emoji, context, true, fields...)
 }
 
 // SetLogger sets the logger instance for the package in a thread-safe manner.
@@ -76,27 +97,13 @@ func SetLogger(logger *zap.Logger) {
 // LogInfoWithEmoji logs an informational message with a given emoji, context, and fields.
 // It checks if the Logger is not nil before logging to prevent panics.
 func LogInfoWithEmoji(emoji string, context string, fields ...zap.Field) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if Logger == nil {
-		fmt.Printf(language.ErrorLoggerIsNotSet, context)
-		return
-	}
-	Logger.Info(emoji+" "+context, fields...)
+	LogWithEmoji(zapcore.InfoLevel, emoji, context, false, fields...)
 }
 
 // logErrorWithEmoji logs an error message with a given emoji, context, and fields.
 // It checks if the Logger is not nil before logging to prevent panics.
 func LogErrorWithEmoji(emoji string, context string, fields ...zap.Field) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if Logger == nil {
-		fmt.Printf(language.ErrorLoggerIsNotSet, context)
-		return
-	}
-	Logger.Info(emoji+" "+context, fields...)
+	LogWithEmoji(zapcore.ErrorLevel, emoji, context, false, fields...)
 }
 
 // WithAnyZapField creates a LogFieldOption that encapsulates a zap.Field for deferred addition to a log entry.

@@ -87,3 +87,7 @@ const (
 const (
 	PirateEmoji = "🏴‍☠️ "
 )
+
+const (
+	Unsupportedloglevel = "unsupported log level: %v\n"
+)
