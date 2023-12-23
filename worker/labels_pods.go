@@ -73,3 +73,36 @@ func labelSinglePod(ctx context.Context, clientset *kubernetes.Clientset, pod *c
 	}
 	return nil
 }
+
+// extractLabelParameters extracts and validates the label key and value from the parameters.
+// It is used to ensure that the parameters provided for labeling operations are of the correct
+// type and are present before proceeding with the operation. This function is crucial for
+// maintaining type safety and preventing runtime errors that could occur when accessing the
+// map directly. It acts as a safeguard, checking the existence and type of the label parameters
+// before they are used to label pods.
+//
+// Parameters:
+//   - parameters: A map of interface{} values that should contain the labeling parameters.
+//
+// Returns:
+//   - labelKey: The extracted label key as a string if present and of type string.
+//   - labelValue: The extracted label value as a string if present and of type string.
+//   - err: An error if either the label key or value is missing from the parameters or is not a string.
+//
+// The function will return an error if the required parameters ("labelKey" and "labelValue") are
+// not found in the input map, or if they are not of type string. This error can then be handled
+// by the caller to ensure the labeling operation does not proceed with invalid parameters.
+func extractLabelParameters(parameters map[string]interface{}) (labelKey string, labelValue string, err error) {
+	var ok bool
+	labelKey, ok = parameters["labelKey"].(string)
+	if !ok {
+		return "", "", fmt.Errorf(language.ErrorParamLabelKey)
+	}
+
+	labelValue, ok = parameters["labelValue"].(string)
+	if !ok {
+		return "", "", fmt.Errorf(language.ErrorParamLabelabelValue)
+	}
+
+	return labelKey, labelValue, nil
+}
