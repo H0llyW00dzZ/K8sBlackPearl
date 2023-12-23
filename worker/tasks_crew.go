@@ -25,17 +25,19 @@ type Task struct {
 // Implementations of TaskRunner should execute tasks based on the provided context,
 // Kubernetes clientset, namespace, and task parameters.
 type TaskRunner interface {
-	Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}) error
+	Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error
 }
 
 // CrewGetPods is an example TaskRunner which currently only prints the task's parameters.
 // This struct is intended to be a placeholder and should be extended to implement
 // the backup logic for the task it represents.
-type CrewGetPods struct{}
+type CrewGetPods struct {
+	workerIndex int
+}
 
 // Run prints the task parameters to stdout. This method should be replaced with
 // actual backup logic to fulfill the TaskRunner interface.
-func (b *CrewGetPods) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}) error {
+func (b *CrewGetPods) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
 	// Implement backup logic here
 	// Note: Currently unimplemented, not ready yet unless you want to implement it as expert.
 	fmt.Println(language.RunningTaskBackup, parameters)
@@ -64,11 +66,14 @@ func GetTaskRunner(taskType string) (TaskRunner, error) {
 
 // CrewGetPodsTaskRunner is an implementation of TaskRunner that lists and logs all pods
 // in a given Kubernetes namespace.
-type CrewGetPodsTaskRunner struct{}
+type CrewGetPodsTaskRunner struct {
+	workerIndex int
+}
 
 // Run lists all pods in the specified namespace and logs each pod's name and status.
 // It uses the provided Kubernetes clientset and context to interact with the Kubernetes cluster.
-func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}) error {
+func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+
 	fields := navigator.CreateLogFields(
 		language.TaskFetchPods,
 		shipsnamespace,
@@ -76,13 +81,13 @@ func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.C
 	)
 	navigator.LogInfoWithEmoji(
 		constant.ModernGopherEmoji,
-		language.FetchingPods,
+		fmt.Sprintf(language.FetchingPods, workerIndex),
 		fields...,
 	)
 
 	listOptions, err := getListOptions(parameters)
 	if err != nil {
-		navigator.LogErrorWithEmoji(constant.ModernGopherEmoji, language.InvalidParameters, fields...)
+		navigator.LogErrorWithEmojiRateLimited(constant.ModernGopherEmoji, language.InvalidParameters, fields...)
 		return err
 	}
 
@@ -97,12 +102,14 @@ func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.C
 
 // CrewProcessCheckHealthTask is an implementation of TaskRunner that checks the health of each pod
 // in a given Kubernetes namespace and sends the results to a channel.
-type CrewProcessCheckHealthTask struct{}
+type CrewProcessCheckHealthTask struct {
+	workerIndex int
+}
 
 // Run iterates over the pods in the specified namespace, checks their health status,
 // and sends a formatted status message to the provided results channel.
 // It respects the context's cancellation signal and stops processing if the context is cancelled.
-func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}) error {
+func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
 	fields := navigator.CreateLogFields(
 		language.TaskCheckHealth,
 		shipsnamespace,
@@ -129,12 +136,12 @@ func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kuberne
 
 // performTask runs the specified task by finding the appropriate TaskRunner from the registry
 // and invoking its Run method with the task's parameters.
-func performTask(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task Task) error {
+func performTask(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task Task, workerIndex int) error {
 	runner, err := GetTaskRunner(task.Type)
 	if err != nil {
 		return err
 	}
-	return runner.Run(ctx, clientset, shipsnamespace, task.Name, task.Parameters)
+	return runner.Run(ctx, clientset, shipsnamespace, task.Name, task.Parameters, workerIndex)
 }
 
 // LoadTasksFromJSON reads a JSON file containing an array of Task objects, unmarshals it,

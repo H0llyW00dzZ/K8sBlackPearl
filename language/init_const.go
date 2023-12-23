@@ -27,11 +27,14 @@ const (
 )
 
 const (
-	FetchingPods   = "Fetching pods"
+	FetchingPods   = "Crew Worker %d: Fetching pods"
 	PodsFetched    = "Pods fetched"
 	ProcessingPods = "Processing pod: %s"
 	PodsName       = "Pods name"
 	PodStatus      = "Pods status"
+	Pods           = "pods"
+	Phase          = "phase"
+	healthStatus   = "healthStatus"
 )
 
 const (
@@ -48,10 +51,11 @@ const (
 	TaskCreatePod     = "CreatePod"
 	TaskDeletePod     = "DeletePod"
 	TaskCompleteS     = "Task '%s' completed successfully."
+	TaskWorker_Name   = "Crew Worker %d: %s"
 	TaskNumber        = "The number of workers and the number of tasks do not match."
 	RunningTaskBackup = "Running BackupTaskRunner with parameters:"
 	Task_Name         = "task_name"
-	Worker_Name       = "worker"
+	Worker_Name       = "crew_worker"
 )
 
 const (
@@ -73,4 +77,9 @@ const (
 
 const (
 	Ships_Namespace = "ships_namespace"
+)
+
+const (
+	Attempt     = "attempt"
+	Max_Retries = "max_retries"
 )

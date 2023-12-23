@@ -63,7 +63,7 @@ func LogErrorWithEmojiRateLimited(emoji string, context string, fields ...zap.Fi
 		fmt.Printf(language.ErrorLoggerIsNotSet, context)
 		return
 	}
-	tryLog(Logger.Error, emoji, context, fields...)
+	tryLog(Logger.Info, emoji, context, fields...)
 }
 
 // SetLogger sets the logger instance for the package in a thread-safe manner.
