@@ -9,6 +9,7 @@ import (
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
+	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -24,7 +25,7 @@ type Task struct {
 // Implementations of TaskRunner should execute tasks based on the provided context,
 // Kubernetes clientset, namespace, and task parameters.
 type TaskRunner interface {
-	Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, parameters map[string]interface{}) error
+	Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}) error
 }
 
 // CrewGetPods is an example TaskRunner which currently only prints the task's parameters.
@@ -34,7 +35,7 @@ type CrewGetPods struct{}
 
 // Run prints the task parameters to stdout. This method should be replaced with
 // actual backup logic to fulfill the TaskRunner interface.
-func (b *CrewGetPods) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, parameters map[string]interface{}) error {
+func (b *CrewGetPods) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}) error {
 	// Implement backup logic here
 	// Note: Currently unimplemented, not ready yet unless you want to implement it as expert.
 	fmt.Println(language.RunningTaskBackup, parameters)
@@ -67,9 +68,17 @@ type CrewGetPodsTaskRunner struct{}
 
 // Run lists all pods in the specified namespace and logs each pod's name and status.
 // It uses the provided Kubernetes clientset and context to interact with the Kubernetes cluster.
-func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, parameters map[string]interface{}) error {
-	fields := navigator.CreateLogFields(language.TaskFetchPods, shipsnamespace)
-	navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, language.FetchingPods, fields...)
+func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}) error {
+	fields := navigator.CreateLogFields(
+		language.TaskFetchPods,
+		shipsnamespace,
+		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+	)
+	navigator.LogInfoWithEmoji(
+		constant.ModernGopherEmoji,
+		language.FetchingPods,
+		fields...,
+	)
 
 	listOptions, err := getListOptions(parameters)
 	if err != nil {
@@ -93,7 +102,17 @@ type CrewProcessCheckHealthTask struct{}
 // Run iterates over the pods in the specified namespace, checks their health status,
 // and sends a formatted status message to the provided results channel.
 // It respects the context's cancellation signal and stops processing if the context is cancelled.
-func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, parameters map[string]interface{}) error {
+func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}) error {
+	fields := navigator.CreateLogFields(
+		language.TaskCheckHealth,
+		shipsnamespace,
+		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+	)
+	navigator.LogInfoWithEmoji(
+		constant.ModernGopherEmoji,
+		language.WorkerCheckingHealth,
+		fields...,
+	)
 	listOptions, err := getListOptions(parameters)
 	if err != nil {
 		return err
@@ -115,7 +134,7 @@ func performTask(ctx context.Context, clientset *kubernetes.Clientset, shipsname
 	if err != nil {
 		return err
 	}
-	return runner.Run(ctx, clientset, shipsnamespace, task.Parameters)
+	return runner.Run(ctx, clientset, shipsnamespace, task.Name, task.Parameters)
 }
 
 // LoadTasksFromJSON reads a JSON file containing an array of Task objects, unmarshals it,
