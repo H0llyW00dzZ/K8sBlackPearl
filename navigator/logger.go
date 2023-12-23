@@ -36,28 +36,26 @@ func SetLogger(logger *zap.Logger) {
 // It checks if the Logger is not nil before logging to prevent panics.
 func LogInfoWithEmoji(emoji string, context string, fields ...zap.Field) {
 	mu.Lock()
-	logger := Logger
-	mu.Unlock()
+	defer mu.Unlock()
 
-	if logger == nil {
+	if Logger == nil {
 		fmt.Printf(language.ErrorLoggerIsNotSet, context)
 		return
 	}
-	logger.Info(emoji+" "+context, fields...)
+	Logger.Info(emoji+" "+context, fields...)
 }
 
 // logErrorWithEmoji logs an error message with a given emoji, context, and fields.
 // It checks if the Logger is not nil before logging to prevent panics.
 func LogErrorWithEmoji(emoji string, context string, fields ...zap.Field) {
 	mu.Lock()
-	logger := Logger
-	mu.Unlock()
+	defer mu.Unlock()
 
-	if logger == nil {
+	if Logger == nil {
 		fmt.Printf(language.ErrorLoggerIsNotSet, context)
 		return
 	}
-	logger.Info(emoji+" "+context, fields...)
+	Logger.Info(emoji+" "+context, fields...)
 }
 
 // WithAnyZapField creates a LogFieldOption that encapsulates a zap.Field for deferred addition to a log entry.
