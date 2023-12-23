@@ -38,6 +38,11 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 > [!NOTE]  
 > Support Multiple-Task and a lot's of worker
 
+> [!TIP]
+> The `Support Multiple-Task and a lot's of worker` can automatically scale up by spawning a significant number of workers, as enabled by the automated scalability feature after the [`Enhancement`](https://github.com/H0llyW00dzZ/K8sBlackPearl/pull/23).
+> It has been tested with 100 workers operating across 70 pods, including robust error handling, and has demonstrated stable performance without any bottlenecks.
+> Initially, the CPU consumption is only about 10% on average, which then automatically reduces over time.
+
 #### Example:
 
 ```go
