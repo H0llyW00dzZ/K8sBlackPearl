@@ -92,6 +92,7 @@ const (
 const (
 	Attempt     = "attempt"
 	Max_Retries = "max_retries"
+	Error       = "error"
 )
 
 const (
