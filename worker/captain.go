@@ -9,40 +9,44 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// CaptainTellWorkers starts the specified number of worker goroutines to perform tasks and collects their results.
-// It returns a channel to receive the results and a function to trigger a graceful shutdown.
+// CaptainTellWorkers launches worker goroutines to execute tasks within a Kubernetes namespace.
+// It returns a channel to receive task results and a function to initiate a graceful shutdown.
+// The shutdown function ensures all workers are stopped and the results channel is closed.
+//
+// Parameters:
+//   - ctx: Parent context to control the lifecycle of the workers.
+//   - clientset: Kubernetes API client for task operations.
+//   - shipsNamespace: Namespace in Kubernetes to perform tasks.
+//   - tasks: Slice of Task structs to be executed by the workers.
+//   - workerCount: Number of worker goroutines to start.
+//
+// Returns:
+//   - <-chan string: A read-only channel to receive task results.
+//   - func(): A function to call for initiating a graceful shutdown of the workers.
 func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []Task, workerCount int) (<-chan string, func()) {
 	results := make(chan string)
 	var wg sync.WaitGroup
-	taskStatus := NewTaskStatusMap() // Create a TaskStatusMap to track task claims.
+	taskStatus := NewTaskStatusMap() // Tracks the claiming of tasks to avoid duplication.
 
-	// Create a new context that can be cancelled to signal the workers to shutdown.
-	shutdownCtx, cancelFunc := context.WithCancel(ctx)
+	shutdownCtx, cancelFunc := context.WithCancel(ctx) // Derived context to signal shutdown.
 
-	// Start the specified number of worker goroutines.
 	for i := 0; i < workerCount; i++ {
 		wg.Add(1)
 		go func(workerIndex int) {
 			defer wg.Done()
-
-			// Set up the logger for this worker.
 			workerLogger := zap.L().With(zap.Int(language.Worker_Name, workerIndex))
-			//navigator.SetLogger(workerLogger) // Already Safe now with tracker
-
-			// Now call CrewWorker with the tasks, results channel, and taskStatus.
 			CrewWorker(shutdownCtx, clientset, shipsNamespace, tasks, results, workerLogger, taskStatus, workerIndex)
 		}(i)
 	}
 
-	// Shutdown function to be called to initiate a graceful shutdown.
+	// shutdown is called to initiate a graceful shutdown of all workers.
 	shutdown := func() {
-		// Signal all workers to stop by cancelling the context.
-		cancelFunc()
+		cancelFunc() // Signal workers to stop by cancelling the context.
 
-		// Wait for all workers to finish in a separate goroutine to avoid blocking.
+		// Ensure channel closure happens after all workers have finished.
 		go func() {
-			wg.Wait()
-			close(results)
+			wg.Wait()      // Wait for all workers to complete.
+			close(results) // Close the results channel safely.
 		}()
 	}
 

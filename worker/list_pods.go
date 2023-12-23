@@ -2,7 +2,9 @@ package worker
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -23,6 +25,10 @@ import (
 //
 //   - A pointer to a corev1.PodList containing the list of Pods that match the list options.
 //   - An error if the call to the Kubernetes API fails, otherwise nil.
-func listPods(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, listOptions v1.ListOptions) (*corev1.PodList, error) {
-	return clientset.CoreV1().Pods(shipsnamespace).List(ctx, listOptions)
+func listPods(ctx context.Context, clientset *kubernetes.Clientset, namespace string, listOptions v1.ListOptions) (*corev1.PodList, error) {
+	pods, err := clientset.CoreV1().Pods(namespace).List(ctx, listOptions)
+	if err != nil {
+		return nil, fmt.Errorf(language.ErrorPailedtoListPods, err)
+	}
+	return pods, nil
 }
