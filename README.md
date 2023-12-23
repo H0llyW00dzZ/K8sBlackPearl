@@ -97,6 +97,9 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 > [!NOTE]  
 > This still development, there is no configuration/setup, or docs for how to run it unless you are expert in GO.
 
+> [!TIP]
+> The Navigator package (`Dependency Injection`), now includes support for `zap.NewProduction()`. This enhancement showcases one of the strengths of the Go programming language. In contrast, dependency injection is often more challenging to implement in other programming languages, so yeah get good get golang.
+
 # TODO
 
 ## CrewWorker Function Improvements
