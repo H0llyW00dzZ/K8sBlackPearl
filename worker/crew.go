@@ -7,6 +7,7 @@ import (
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
+	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -87,9 +88,11 @@ func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset
 			navigator.WithAnyZapField(zap.Int(language.Max_Retries, maxRetries)),
 			navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
 		)
+		// magic goes here, append fields log ":=" into binaries lmao
+		retryMessage := fmt.Sprintf("%s %s", constant.ErrorEmoji, fmt.Sprintf(language.RetryingTask, attempt+1, maxRetries))
 		navigator.LogInfoWithEmoji(
 			language.PirateEmoji,
-			fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.RetryingTask, attempt+1, maxRetries)),
+			fmt.Sprintf(language.TaskWorker_Name, workerIndex, retryMessage),
 			fieldslog...,
 		)
 
