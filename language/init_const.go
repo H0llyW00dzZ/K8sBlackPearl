@@ -27,7 +27,7 @@ const (
 )
 
 const (
-	FetchingPods   = "Fetching pods"
+	FetchingPods   = "Crew Worker %d: Fetching pods"
 	PodsFetched    = "Pods fetched"
 	ProcessingPods = "Processing pod: %s"
 	PodsName       = "Pods name"

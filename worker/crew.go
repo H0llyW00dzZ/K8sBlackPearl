@@ -64,7 +64,7 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNames
 // Returns an error if the task could not be completed successfully after all retries.
 func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task Task, results chan<- string, workerIndex int) error {
 	for attempt := 0; attempt < maxRetries; attempt++ {
-		err := performTask(ctx, clientset, shipsnamespace, task)
+		err := performTask(ctx, clientset, shipsnamespace, task, workerIndex)
 		if err == nil {
 			results <- fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.TaskCompleteS, task.Name))
 			return nil
