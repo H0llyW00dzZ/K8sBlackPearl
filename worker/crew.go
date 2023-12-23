@@ -30,14 +30,14 @@ const (
 //   - shipsnamespace: The namespace within the Kubernetes cluster to operate upon.
 //   - tasks: A slice of Task structs, each representing a task to be executed.
 //   - results: A channel for sending the results (success or error messages) back to the caller.
-func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []Task, results chan<- string, logger *zap.Logger, taskStatus *TaskStatusMap) {
+func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []Task, results chan<- string, logger *zap.Logger, taskStatus *TaskStatusMap, workerIndex int) {
 	for _, task := range tasks {
 		// Try to claim the task. If it's already claimed, skip it.
 		if !taskStatus.Claim(task.Name) {
 			continue
 		}
 
-		err := performTaskWithRetries(ctx, clientset, shipsNamespace, task, results)
+		err := performTaskWithRetries(ctx, clientset, shipsNamespace, task, results, workerIndex)
 		if err != nil {
 			// If the task fails, you can choose to release it for retrying.
 			taskStatus.Release(task.Name)
@@ -45,7 +45,7 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNames
 			results <- err.Error()
 		} else {
 			// If the task is successful, it remains claimed to prevent retries.
-			results <- fmt.Sprintf(language.TaskCompleteS, task.Name)
+			results <- fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.TaskCompleteS, task.Name))
 		}
 	}
 }
@@ -62,11 +62,11 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNames
 //   - results: A channel to report the outcome of the task execution.
 //
 // Returns an error if the task could not be completed successfully after all retries.
-func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task Task, results chan<- string) error {
+func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task Task, results chan<- string, workerIndex int) error {
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		err := performTask(ctx, clientset, shipsnamespace, task)
 		if err == nil {
-			results <- fmt.Sprintf(language.TaskCompleteS, task.Name)
+			results <- fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.TaskCompleteS, task.Name))
 			return nil
 		}
 
@@ -77,12 +77,14 @@ func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset
 		fieldslog := navigator.CreateLogFields(
 			language.TaskFetchPods,
 			shipsnamespace,
-			navigator.WithAnyZapField(zap.Int("attempt", attempt+1)),
-			navigator.WithAnyZapField(zap.Int("max_retries", maxRetries)),
+			navigator.WithAnyZapField(zap.Int(language.Worker_Name, workerIndex)),
+			navigator.WithAnyZapField(zap.Int(language.Attempt, attempt+1)),
+			navigator.WithAnyZapField(zap.Int(language.Max_Retries, maxRetries)),
+			navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
 		)
 		navigator.LogInfoWithEmoji(
 			constant.ModernGopherEmoji,
-			fmt.Sprintf(language.RetryingTask, attempt+1, maxRetries),
+			fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.RetryingTask, attempt+1, maxRetries)),
 			fieldslog...,
 		)
 
@@ -114,9 +116,9 @@ func CrewProcessPods(ctx context.Context, pods []corev1.Pod, results chan<- stri
 			fields := navigator.CreateLogFields(
 				language.ProcessingPods,
 				pod.Namespace,
-				navigator.WithAnyZapField(zap.String("pod", pod.Name)),
-				navigator.WithAnyZapField(zap.String("phase", string(pod.Status.Phase))),
-				navigator.WithAnyZapField(zap.String("healthStatus", healthStatus)),
+				navigator.WithAnyZapField(zap.String(language.Pods, pod.Name)),
+				navigator.WithAnyZapField(zap.String(language.Phase, string(pod.Status.Phase))),
+				navigator.WithAnyZapField(zap.String(language.HealthyStatus, healthStatus)),
 			)
 			navigator.LogInfoWithEmoji(constant.ModernGopherEmoji, statusMsg, fields...)
 			results <- statusMsg

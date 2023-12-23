@@ -30,7 +30,7 @@ func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, sh
 			//navigator.SetLogger(workerLogger) // Already Safe now with tracker
 
 			// Now call CrewWorker with the tasks, results channel, and taskStatus.
-			CrewWorker(shutdownCtx, clientset, shipsNamespace, tasks, results, workerLogger, taskStatus)
+			CrewWorker(shutdownCtx, clientset, shipsNamespace, tasks, results, workerLogger, taskStatus, workerIndex)
 		}(i)
 	}
 
