@@ -83,3 +83,7 @@ const (
 	Attempt     = "attempt"
 	Max_Retries = "max_retries"
 )
+
+const (
+	PirateEmoji = "🏴‍☠️ "
+)

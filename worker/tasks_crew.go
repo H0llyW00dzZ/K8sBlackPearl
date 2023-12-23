@@ -8,7 +8,6 @@ import (
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
-	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 )
@@ -80,14 +79,14 @@ func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.C
 		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
 	)
 	navigator.LogInfoWithEmoji(
-		constant.ModernGopherEmoji,
+		language.PirateEmoji,
 		fmt.Sprintf(language.FetchingPods, workerIndex),
 		fields...,
 	)
 
 	listOptions, err := getListOptions(parameters)
 	if err != nil {
-		navigator.LogErrorWithEmojiRateLimited(constant.ModernGopherEmoji, language.InvalidParameters, fields...)
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
 		return err
 	}
 
@@ -116,7 +115,7 @@ func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kuberne
 		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
 	)
 	navigator.LogInfoWithEmoji(
-		constant.ModernGopherEmoji,
+		language.PirateEmoji,
 		language.WorkerCheckingHealth,
 		fields...,
 	)
