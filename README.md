@@ -36,7 +36,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 ```
 
 > [!NOTE]  
-> Support Multiple-Task and currently only stable with 1 worker
+> Support Multiple-Task and a lot's of worker
 
 #### Example:
 
