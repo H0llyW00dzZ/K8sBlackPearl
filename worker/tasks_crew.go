@@ -10,6 +10,8 @@ import (
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -170,6 +172,16 @@ func (c *CrewLabelPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes
 	successMessage := fmt.Sprintf(language.WorkerSucessfully, labelKey, labelValue)
 	navigator.LogInfoWithEmoji(language.PirateEmoji, successMessage, fields...)
 	return nil
+}
+
+// getLatestVersionOfPod fetches the latest version of the Pod from the Kubernetes API.
+func getLatestVersionOfPod(ctx context.Context, clientset *kubernetes.Clientset, namespace string, podName string) (*corev1.Pod, error) {
+	// Fetch the latest version of the Pod using the clientset.
+	latestPod, err := clientset.CoreV1().Pods(namespace).Get(ctx, podName, v1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return latestPod, nil
 }
 
 // performTask runs the specified task by finding the appropriate TaskRunner from the registry
