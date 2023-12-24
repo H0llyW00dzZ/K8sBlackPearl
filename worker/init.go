@@ -20,4 +20,7 @@ func init() {
 	// Registers a TaskRunner for labeling Kubernetes pods.
 	RegisterTaskRunner("CrewWriteLabelPods", func() TaskRunner { return &CrewLabelPodsTaskRunner{} })
 
+	// Register the new TaskRunner for managing deployments.
+	RegisterTaskRunner("CrewManageDeployments", func() TaskRunner { return &CrewManageDeployments{} })
+
 }
