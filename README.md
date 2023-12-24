@@ -28,6 +28,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 [
     {
         "name": "list-specific-pods",
+        "shipsNamespace": "BlackPearl",
         "type": "GetPods",
         "parameters": {
             "labelSelector": "app=nginx",
@@ -37,6 +38,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
     },
 	{
         "name": "list-specific-pods-run",
+        "shipsNamespace": "BlackPearl",
         "type": "CrewGetPodsTaskRunner",
         "parameters": {
             "labelSelector": "app=nginx",
@@ -46,6 +48,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
     },
 	{
         "name": "check-health-pods",
+        "shipsNamespace": "BlackPearl",
         "type": "CrewCheckHealthPods",
         "parameters": {
             "labelSelector": "app=nginx",
@@ -55,6 +58,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
     },
     {
         "name": "label-all-pods",
+        "shipsNamespace": "BlackPearl",
         "type": "CrewWriteLabelPods",
         "parameters": {
             "labelKey": "environment",
@@ -63,6 +67,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
     },
     {
         "name": "update-specific-pod",
+        "shipsNamespace": "BlackPearl",
         "type": "CrewWriteLabelPods",
         "parameters": {
             "podName": "pod-name",
@@ -76,6 +81,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 #### YAML:
 ```yaml
 - name: "list-specific-pods"
+  shipsNamespace: "BlackPearl"
   type: "GetPods"
   parameters:
     labelSelector: "app=nginx"
@@ -83,6 +89,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
     limit: 10
 
 - name: "list-specific-pods-run"
+  shipsNamespace: "BlackPearl"
   type: "CrewGetPodsTaskRunner"
   parameters:
     labelSelector: "app=nginx"
@@ -90,6 +97,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
     limit: 10
 
 - name: "check-health-pods"
+  shipsNamespace: "BlackPearl"
   type: "CrewCheckHealthPods"
   parameters:
     labelSelector: "app=nginx"
@@ -97,12 +105,14 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
     limit: 10
 
 - name: "label-all-pods"
+  shipsNamespace: "BlackPearl"
   type: "CrewWriteLabelPods"
   parameters:
     labelKey: "environment"
     labelValue: "production"
 
 - name: "update-specific-pod"
+  shipsNamespace: "BlackPearl"
   type: "CrewWriteLabelPods"
   parameters:
     podName: "pod-name"
@@ -123,14 +133,14 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 
 ```go
 
-	// Define the namespace and number of workers.
-	shipsNamespace := "default" // Replace with your namespace
-	workerCount := 1            // Number of workers you want to start
+	// Define the number of workers.
+	workerCount := 1337            // Number of workers you want to start
 
 	// Define the tasks to be processed by the workers.
 	tasks := []worker.Task{
 		{
 			Name: "check pods running 1",
+      ShipNamespace: "BlackPearl", // this your namespace
 			Type: "CrewGetPodsTaskRunner",
 			Parameters: map[string]interface{}{
 				"labelSelector": "app=nginx",
@@ -140,6 +150,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 		},
     		{
 			Name: "check pods running 2",
+      ShipNamespace: "BlackPearl", // this your namespace
 			Type: "CrewGetPodsTaskRunner",
 			Parameters: map[string]interface{}{
 				"labelSelector": "app=nginx",
@@ -149,6 +160,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 		},
     		{
 			Name: "check pods running 3",
+      ShipNamespace: "BlackPearl", // this your namespace
 			Type: "CrewGetPodsTaskRunner",
 			Parameters: map[string]interface{}{
 				"labelSelector": "app=nginx",
@@ -157,6 +169,10 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 			},
 		},
 	}
+
+  // Assuming that all tasks have the same namespace and you want to use the first task's namespace.
+	// If tasks can have different namespaces, you would need to handle that accordingly.
+	shipsNamespace := tasks[0].ShipsNamespace
 
 	// Start workers.
 	results, shutdown := worker.CaptainTellWorkers(ctx, clientset, shipsNamespace, tasks, workerCount)
