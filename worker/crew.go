@@ -7,6 +7,7 @@ import (
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
+	"github.com/H0llyW00dzZ/K8sBlackPearl/worker/configuration"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -32,7 +33,7 @@ const (
 //   - logger: Logger for structured logging within the worker.
 //   - taskStatus: Map to track and control the status of tasks.
 //   - workerIndex: Identifier for the worker instance for logging.
-func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []Task, results chan<- string, logger *zap.Logger, taskStatus *TaskStatusMap, workerIndex int) {
+func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []configuration.Task, results chan<- string, logger *zap.Logger, taskStatus *TaskStatusMap, workerIndex int) {
 	for _, task := range tasks {
 		// Try to claim the task. If it's already claimed, skip it.
 		if !taskStatus.Claim(task.Name) {
@@ -67,7 +68,7 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNames
 //
 // Returns:
 //   - error: Error if the task fails after all retry attempts.
-func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task Task, results chan<- string, workerIndex int) error {
+func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task configuration.Task, results chan<- string, workerIndex int) error {
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		err := performTask(ctx, clientset, shipsnamespace, task, workerIndex)
 		if err != nil {
@@ -82,7 +83,7 @@ func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset
 	return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, maxRetries)
 }
 
-func resolveConflict(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task *Task) error {
+func resolveConflict(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task *configuration.Task) error {
 	podName, ok := task.Parameters[language.PodName].(string)
 	if !ok {
 		return fmt.Errorf(language.ErrorPodNameParameter)
