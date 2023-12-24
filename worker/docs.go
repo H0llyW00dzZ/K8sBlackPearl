@@ -1,6 +1,7 @@
 // Package worker provides a set of tools designed to facilitate the interaction with
 // Kubernetes resources from within a cluster. It offers a convenient abstraction for
-// managing Kubernetes operations, focusing on pod health checks, pod labeling, and structured logging.
+// managing Kubernetes operations, focusing on pod health checks, pod labeling, structured logging,
+// and task configuration through YAML or JSON files.
 //
 // The package is intended for applications running as pods within Kubernetes clusters
 // and leverages in-cluster configuration to establish a clientset for API interactions.
@@ -20,15 +21,21 @@
 //     when necessary, reducing API calls and improving performance. It also includes
 //     retry logic to handle intermittent API errors.
 //
+//   - Configuration loading from YAML files has been added, enhancing the flexibility
+//     and configurability of task management within the worker processes.
+//
 // # Functions
 //
 //   - NewKubernetesClient: Creates a new Kubernetes clientset configured for in-cluster
 //     communication with the Kubernetes API server.
 //
-//   - CrewWorker: Orchestrates a worker process to perform tasks such as health checks
-//     and labeling of pods within a specified namespace. It includes retry logic to handle transient
-//     errors and respects cancellation and timeout contexts. Structured logging is used
-//     to provide detailed contextual information.
+//   - CrewWorker: Orchestrates a worker process to perform tasks such as health checks,
+//     labeling of pods, and other configurable tasks within a specified namespace. It includes
+//     retry logic to handle transient errors and respects cancellation and timeout contexts.
+//     Structured logging is used to provide detailed contextual information.
+//
+//   - LoadTasksFromYAML: Loads task configurations from a YAML file, allowing for
+//     dynamic task management based on external configuration.
 //
 //   - CrewGetPods: Retrieves all pods within a given namespace, logging the attempt
 //     and outcome of the operation.
@@ -47,7 +54,8 @@
 // Initialize the Kubernetes client using NewKubernetesClient, then leverage the client
 // to perform operations such as retrieving and processing pods within a namespace.
 // Contexts are used to manage the lifecycle of the worker processes, including graceful
-// shutdowns and cancellation.
+// shutdowns and cancellation. Task configurations can be loaded from a YAML file for
+// enhanced flexibility.
 //
 // Example:
 //
@@ -59,8 +67,13 @@
 //	ctx, cancel := context.WithCancel(context.Background())
 //	defer cancel() // Ensure cancellation is called to free resources
 //
+//	tasks, err := worker.LoadTasksFromYAML("tasks.yaml")
+//	if err != nil {
+//	    // Handle error
+//	}
+//
 //	resultsChan := make(chan string)
-//	go worker.CrewWorker(ctx, clientset, namespace, resultsChan)
+//	go worker.CrewWorker(ctx, clientset, namespace, tasks, resultsChan)
 //
 //	// Process results as they come in
 //	for result := range resultsChan {
@@ -80,6 +93,9 @@
 //
 //   - Pod Labeling Logic has been enhanced to perform more efficiently by minimizing
 //     unnecessary API calls, and it now includes robust error handling and retry mechanisms.
+//
+//   - Configuration management has been improved by enabling the loading of task
+//     configurations from YAML files, offering greater versatility and ease of use.
 //
 // # TODO
 //
