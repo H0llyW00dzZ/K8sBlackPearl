@@ -7,7 +7,6 @@ import (
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
-	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -44,7 +43,7 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNames
 		if err != nil {
 			// If the task fails, you can choose to release it for retrying.
 			taskStatus.Release(task.Name)
-			logFinalError(shipsNamespace, task.Name, err)
+			logFinalError(shipsNamespace, task.Name, err, maxRetries)
 			results <- err.Error()
 		} else {
 			// If the task is successful, it remains claimed to prevent retries.
@@ -71,36 +70,30 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNames
 func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task Task, results chan<- string, workerIndex int) error {
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		err := performTask(ctx, clientset, shipsnamespace, task, workerIndex)
-		if err == nil {
+		if err != nil {
+			if !handleTaskError(ctx, clientset, shipsnamespace, err, attempt, &task, workerIndex, maxRetries, retryDelay) {
+				return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, maxRetries)
+			}
+		} else {
 			results <- fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.TaskCompleteS, task.Name))
 			return nil
 		}
-
-		if ctx.Err() != nil {
-			return fmt.Errorf(language.ContextCancelled)
-		}
-
-		fieldslog := navigator.CreateLogFields(
-			language.TaskFetchPods,
-			shipsnamespace,
-			navigator.WithAnyZapField(zap.Int(language.Worker_Name, workerIndex)),
-			navigator.WithAnyZapField(zap.Int(language.Attempt, attempt+1)),
-			navigator.WithAnyZapField(zap.Int(language.Max_Retries, maxRetries)),
-			navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
-		)
-		// magic goes here, append fields log ":=" into binaries lmao
-		retryMessage := fmt.Sprintf("%s %s", constant.ErrorEmoji, fmt.Sprintf(language.RetryingTask, attempt+1, maxRetries))
-		navigator.LogInfoWithEmoji(
-			language.PirateEmoji,
-			fmt.Sprintf(language.TaskWorker_Name, workerIndex, retryMessage),
-			fieldslog...,
-		)
-
-		logRetryAttempt(task.Name, attempt, err)
-		time.Sleep(retryDelay)
 	}
-
 	return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, maxRetries)
+}
+
+func resolveConflict(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task *Task) error {
+	podName, ok := task.Parameters[language.PodName].(string)
+	if !ok {
+		return fmt.Errorf(language.ErrorPodNameParameter)
+	}
+	updatedPod, err := getLatestVersionOfPod(ctx, clientset, shipsnamespace, podName)
+	if err != nil {
+		return err // Return the error if we can't get the latest version.
+	}
+	// Update task parameters with the new pod information.
+	task.Parameters[language.ResourceVersion] = updatedPod.ResourceVersion
+	return nil
 }
 
 // CrewProcessPods iterates over a list of pods to evaluate their health.

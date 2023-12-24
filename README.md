@@ -32,6 +32,41 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
             "fieldSelector": "status.phase=Running",
             "limit": 10
         }
+    },
+	{
+        "name": "list-specific-pods-run",
+        "type": "CrewGetPodsTaskRunner",
+        "parameters": {
+            "labelSelector": "app=nginx",
+            "fieldSelector": "status.phase=Running",
+            "limit": 10
+        }
+    },
+	{
+        "name": "check-health-pods",
+        "type": "CrewCheckHealthPods",
+        "parameters": {
+            "labelSelector": "app=nginx",
+            "fieldSelector": "status.phase=Running",
+            "limit": 10
+        }
+    },
+    {
+        "name": "label-all-pods",
+        "type": "CrewWriteLabelPods",
+        "parameters": {
+            "labelKey": "environment",
+            "labelValue": "production"
+        }
+    },
+    {
+        "name": "update-specific-pod",
+        "type": "CrewWriteLabelPods",
+        "parameters": {
+            "podName": "pod-name",
+            "labelKey": "environment",
+            "labelValue": "production"
+        }
     }
 ]
 ```

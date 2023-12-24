@@ -2,35 +2,38 @@ package language
 
 // Note: This constant used for translation.
 const (
-	ErrorListingPods         = "error listing pods: %w"
-	ErrorUpdatingPodLabels   = "error updating pod labels: %w"
-	ErrorCreatingPod         = "error creating pod: %w"
-	ErrorDeletingPod         = "error deleting pod: %w"
-	ErrorGettingPod          = "error getting pod: %w"
-	ErrorPodNotFound         = "pod not found"
-	ErrorUpdatingPod         = "Error updating pod: %w"
-	ErrorRetrievingPods      = "Error retrieving pods: %w"
-	PodAndStatus             = "Pod: %s, Status: %s"
-	PodAndStatusAndHealth    = "Pod: %s, Status: %s, Health: %s"
-	errconfig                = "cannot load kubeconfig: %w"
-	cannotcreatek8s          = "cannot create kubernetes client: %w"
-	ErrorLoggerIsNotSet      = "Logger is not set! Cannot log info: %s\n"
-	ErrorLogger              = "cannot create logger: %w"
-	ErrorFailedToComplete    = "Failed to complete task after %d attempts"
-	ContextCancelledAbort    = "Context cancelled, aborting retries."
-	ContextCancelled         = "Context cancelled"
-	ErrorDuringTaskAttempt   = "Error during task, attempt %d/%d: %v"
-	UnknownTaskType          = "unknown task type: %s"
-	InvalidParameters        = "invalid parameters"
-	InvalidparametersL       = "invalid parameters: labelSelector, fieldSelector, or limit"
-	ErrorPodsCancelled       = "Pod processing was cancelled."
-	ErrorPailedtoListPods    = "Failed to list pods: %w"
-	ErrorParamLabelSelector  = "parameter 'labelSelector' is required and must be a string"
-	ErrorParamFieldSelector  = "parameter 'fieldSelector' is required and must be a string"
-	ErrorParamLimit          = "parameter 'limit' is required and must be an integer"
-	ErrorParamLabelKey       = "parameter 'labelKey' is required and must be a string"
-	ErrorParamLabelabelValue = "parameter 'labelValue' is required and must be a string"
-	ErrorFailedToWriteLabel  = "Failed to write label pods"
+	ErrorListingPods                       = "error listing pods: %w"
+	ErrorUpdatingPodLabels                 = "error updating pod labels: %w"
+	ErrorCreatingPod                       = "error creating pod: %w"
+	ErrorDeletingPod                       = "error deleting pod: %w"
+	ErrorGettingPod                        = "error getting pod: %w"
+	ErrorPodNotFound                       = "pod not found"
+	ErrorUpdatingPod                       = "Error updating pod: %w"
+	ErrorRetrievingPods                    = "Error retrieving pods: %w"
+	PodAndStatus                           = "Pod: %s, Status: %s"
+	PodAndStatusAndHealth                  = "Pod: %s, Status: %s, Health: %s"
+	errconfig                              = "cannot load kubeconfig: %w"
+	cannotcreatek8s                        = "cannot create kubernetes client: %w"
+	ErrorLoggerIsNotSet                    = "Logger is not set! Cannot log info: %s\n"
+	ErrorLogger                            = "cannot create logger: %w"
+	ErrorFailedToComplete                  = "Failed to complete task after %d attempts"
+	ContextCancelledAbort                  = "Context cancelled, aborting retries."
+	ContextCancelled                       = "Context cancelled"
+	ErrorDuringTaskAttempt                 = "Error during task, attempt %d/%d: %v"
+	UnknownTaskType                        = "unknown task type: %s"
+	InvalidParameters                      = "invalid parameters"
+	InvalidparametersL                     = "invalid parameters: labelSelector, fieldSelector, or limit"
+	ErrorPodsCancelled                     = "Pod processing was cancelled."
+	ErrorPailedtoListPods                  = "Failed to list pods: %w"
+	ErrorParamLabelSelector                = "parameter 'labelSelector' is required and must be a string"
+	ErrorParamFieldSelector                = "parameter 'fieldSelector' is required and must be a string"
+	ErrorParamLimit                        = "parameter 'limit' is required and must be an integer"
+	ErrorParamLabelKey                     = "parameter 'labelKey' is required and must be a string"
+	ErrorParamLabelabelValue               = "parameter 'labelValue' is required and must be a string"
+	ErrorFailedToWriteLabel                = "Failed to write label pods"
+	ErrorFailedToCompleteTaskDueToConflict = "Failed to complete task %s after %d attempts due to conflict: %v"
+	ErrorPodNameParameter                  = "podName parameter is missing or not a string"
+	ErrorFailedToUpdateLabelSPods          = "Failed to update labels for pod %s: %v"
 )
 
 const (
@@ -42,6 +45,7 @@ const (
 	Pods           = "pods"
 	Phase          = "phase"
 	healthStatus   = "healthStatus"
+	PodName        = "podName"
 )
 
 const (
@@ -90,9 +94,10 @@ const (
 )
 
 const (
-	Attempt     = "attempt"
-	Max_Retries = "max_retries"
-	Error       = "error"
+	Attempt         = "attempt"
+	Max_Retries     = "max_retries"
+	Error           = "error"
+	ResourceVersion = "resourceVersion"
 )
 
 const (
