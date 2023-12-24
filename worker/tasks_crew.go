@@ -174,6 +174,18 @@ func (c *CrewLabelPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes
 	return nil
 }
 
+// TODO: Add the new TaskRunner for managing deployments.
+type CrewManageDeployments struct {
+	workerIndex int
+}
+
+// TODO: Add the new TaskRunner for managing deployments.
+func (c *CrewManageDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+	// Note: Currently unimplemented, not ready yet unless you want to implement it as expert.
+	// This could involve scaling deployments, updating images, etc.
+	return nil
+}
+
 // getLatestVersionOfPod fetches the latest version of the Pod from the Kubernetes API.
 func getLatestVersionOfPod(ctx context.Context, clientset *kubernetes.Clientset, namespace string, podName string) (*corev1.Pod, error) {
 	// Fetch the latest version of the Pod using the clientset.
