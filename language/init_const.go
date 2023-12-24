@@ -33,6 +33,7 @@ const (
 	ErrorFailedToWriteLabel                = "Failed to write label pods"
 	ErrorFailedToCompleteTaskDueToConflict = "Failed to complete task %s after %d attempts due to conflict: %v"
 	ErrorPodNameParameter                  = "podName parameter is missing or not a string"
+	ErrorFailedToUpdateLabelSPods          = "Failed to update labels for pod %s: %v"
 )
 
 const (
