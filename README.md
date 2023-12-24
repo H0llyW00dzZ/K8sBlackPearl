@@ -22,6 +22,8 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 
 ### Example Configuration Tasks
 
+#### JSON:
+
 ```json
 [
     {
@@ -69,6 +71,44 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
         }
     }
 ]
+```
+
+#### YAML:
+```yaml
+- name: "list-specific-pods"
+  type: "GetPods"
+  parameters:
+    labelSelector: "app=nginx"
+    fieldSelector: "status.phase=Running"
+    limit: 10
+
+- name: "list-specific-pods-run"
+  type: "CrewGetPodsTaskRunner"
+  parameters:
+    labelSelector: "app=nginx"
+    fieldSelector: "status.phase=Running"
+    limit: 10
+
+- name: "check-health-pods"
+  type: "CrewCheckHealthPods"
+  parameters:
+    labelSelector: "app=nginx"
+    fieldSelector: "status.phase=Running"
+    limit: 10
+
+- name: "label-all-pods"
+  type: "CrewWriteLabelPods"
+  parameters:
+    labelKey: "environment"
+    labelValue: "production"
+
+- name: "update-specific-pod"
+  type: "CrewWriteLabelPods"
+  parameters:
+    podName: "pod-name"
+    labelKey: "environment"
+    labelValue: "production"
+
 ```
 
 > [!NOTE]  
@@ -153,6 +193,9 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 - [x] **Dynamic Task Execution Model**: Implemented a dynamic task execution model that allows for registering and retrieving `TaskRunner` implementations based on task types, enhancing extensibility.
 > [!NOTE]
 > This specialized feature has been successfully integrated.
+
+## Load Configuration Task
+- [x] **Load Configuration**: Enhanced the application to load task configurations from a YAML file, improving ease of use and configurability.
 
 ## Pod Labeling Logic Enhancement
 - [x] **Optimized Pod Labeling**:
