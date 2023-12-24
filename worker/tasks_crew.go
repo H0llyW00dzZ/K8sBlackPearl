@@ -2,27 +2,17 @@ package worker
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
+	"github.com/H0llyW00dzZ/K8sBlackPearl/worker/configuration"
 	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
-	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
-
-// Task represents a unit of work with a name, type, and parameters.
-// Tasks are typically read from a JSON configuration and executed by a TaskRunner.
-type Task struct {
-	Name       string                 `json:"name"`
-	Type       string                 `json:"type"`
-	Parameters map[string]interface{} `json:"parameters"`
-}
 
 // TaskRunner defines the interface for running tasks.
 // Implementations of TaskRunner should execute tasks based on the provided context,
@@ -199,46 +189,10 @@ func getLatestVersionOfPod(ctx context.Context, clientset *kubernetes.Clientset,
 
 // performTask runs the specified task by finding the appropriate TaskRunner from the registry
 // and invoking its Run method with the task's parameters.
-func performTask(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task Task, workerIndex int) error {
+func performTask(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task configuration.Task, workerIndex int) error {
 	runner, err := GetTaskRunner(task.Type)
 	if err != nil {
 		return err
 	}
 	return runner.Run(ctx, clientset, shipsnamespace, task.Name, task.Parameters, workerIndex)
-}
-
-// LoadTasksFromJSON reads a JSON file containing an array of Task objects, unmarshals it,
-// and returns a slice of Task structs. It returns an error if the file cannot be read or
-// the JSON cannot be unmarshaled into the Task structs.
-func LoadTasksFromJSON(filePath string) ([]Task, error) {
-	file, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-
-	var tasks []Task
-	err = json.Unmarshal(file, &tasks)
-	if err != nil {
-		return nil, err
-	}
-
-	return tasks, nil
-}
-
-// LoadTasksFromYAML reads a YAML file containing an array of Task objects, unmarshals it,
-// and returns a slice of Task structs. It returns an error if the file cannot be read or
-// the YAML cannot be unmarshaled into the Task structs.
-func LoadTasksFromYAML(filePath string) ([]Task, error) {
-	file, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-
-	var tasks []Task
-	err = yaml.Unmarshal(file, &tasks)
-	if err != nil {
-		return nil, err
-	}
-
-	return tasks, nil
 }

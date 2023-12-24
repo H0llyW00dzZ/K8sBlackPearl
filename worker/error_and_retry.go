@@ -7,6 +7,7 @@ import (
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
+	"github.com/H0llyW00dzZ/K8sBlackPearl/worker/configuration"
 	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -67,7 +68,7 @@ func logFinalError(shipsnamespace string, taskName string, err error, maxRetries
 //
 // Returns:
 //   - shouldContinue: A boolean indicating whether the task should be retried.
-func handleTaskError(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, err error, attempt int, task *Task, workerIndex int, maxRetries int, retryDelay time.Duration) (shouldContinue bool) {
+func handleTaskError(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, err error, attempt int, task *configuration.Task, workerIndex int, maxRetries int, retryDelay time.Duration) (shouldContinue bool) {
 	if ctx.Err() != nil {
 		return false
 	}

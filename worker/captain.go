@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
+	"github.com/H0llyW00dzZ/K8sBlackPearl/worker/configuration"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 )
@@ -23,7 +24,7 @@ import (
 // Returns:
 //   - <-chan string: A read-only channel to receive task results.
 //   - func(): A function to call for initiating a graceful shutdown of the workers.
-func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []Task, workerCount int) (<-chan string, func()) {
+func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []configuration.Task, workerCount int) (<-chan string, func()) {
 	results := make(chan string)
 	var wg sync.WaitGroup
 	taskStatus := NewTaskStatusMap() // Tracks the claiming of tasks to avoid duplication.
