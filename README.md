@@ -134,13 +134,13 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 ```go
 
 	// Define the number of workers.
-	workerCount := 1337            // Number of workers you want to start
+	workerCount := 1337 // Number of workers you want to start
 
 	// Define the tasks to be processed by the workers.
 	tasks := []worker.Task{
 		{
 			Name: "check pods running 1",
-      ShipNamespace: "BlackPearl", // this your namespace
+			ShipNamespace: "BlackPearl", // this your namespace
 			Type: "CrewGetPodsTaskRunner",
 			Parameters: map[string]interface{}{
 				"labelSelector": "app=nginx",
@@ -150,7 +150,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 		},
     		{
 			Name: "check pods running 2",
-      ShipNamespace: "BlackPearl", // this your namespace
+			ShipNamespace: "BlackPearl", // this your namespace
 			Type: "CrewGetPodsTaskRunner",
 			Parameters: map[string]interface{}{
 				"labelSelector": "app=nginx",
@@ -160,7 +160,7 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 		},
     		{
 			Name: "check pods running 3",
-      ShipNamespace: "BlackPearl", // this your namespace
+			ShipNamespace: "BlackPearl", // this your namespace
 			Type: "CrewGetPodsTaskRunner",
 			Parameters: map[string]interface{}{
 				"labelSelector": "app=nginx",
@@ -176,7 +176,6 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 
 	// Start workers.
 	results, shutdown := worker.CaptainTellWorkers(ctx, clientset, shipsNamespace, tasks, workerCount)
-
 
 ```
 > [!WARNING]
