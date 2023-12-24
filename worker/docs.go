@@ -1,6 +1,6 @@
 // Package worker provides a set of tools designed to facilitate the interaction with
 // Kubernetes resources from within a cluster. It offers a convenient abstraction for
-// managing Kubernetes operations, focusing on pod health checks and structured logging.
+// managing Kubernetes operations, focusing on pod health checks, pod labeling, and structured logging.
 //
 // The package is intended for applications running as pods within Kubernetes clusters
 // and leverages in-cluster configuration to establish a clientset for API interactions.
@@ -16,24 +16,31 @@
 //     implementations based on task types. This extensibility makes it possible to easily
 //     add new task handling logic without modifying the core package code.
 //
+//   - Pod Labeling Logic has been optimized to check existing labels and only update
+//     when necessary, reducing API calls and improving performance. It also includes
+//     retry logic to handle intermittent API errors.
+//
 // # Functions
 //
 //   - NewKubernetesClient: Creates a new Kubernetes clientset configured for in-cluster
 //     communication with the Kubernetes API server.
 //
 //   - CrewWorker: Orchestrates a worker process to perform tasks such as health checks
-//     on pods within a specified namespace. It includes retry logic to handle transient
+//     and labeling of pods within a specified namespace. It includes retry logic to handle transient
 //     errors and respects cancellation and timeout contexts. Structured logging is used
 //     to provide detailed contextual information.
 //
 //   - CrewGetPods: Retrieves all pods within a given namespace, logging the attempt
 //     and outcome of the operation.
 //
-//   - CrewProcessPods: Iterates over a collection of pods, assessing their health and
-//     reporting the status to a results channel. It also handles context cancellation.
+//   - CrewProcessPods: Iterates over a collection of pods, assessing their health,
+//     updating labels, and reporting the status to a results channel. It also handles context cancellation.
 //
 //   - CrewCheckingisPodHealthy: Evaluates the health of a pod based on its phase and
 //     container readiness statuses.
+//
+//   - CrewLabelPods: Updates the labels on a pod, if necessary, based on the provided
+//     labeling rules and specifications.
 //
 // Usage:
 //
@@ -70,6 +77,9 @@
 //
 //   - The dynamic task execution model supports adding new tasks and task runners
 //     without changing existing code, facilitating scalability and extensibility.
+//
+//   - Pod Labeling Logic has been enhanced to perform more efficiently by minimizing
+//     unnecessary API calls, and it now includes robust error handling and retry mechanisms.
 //
 // # TODO
 //
