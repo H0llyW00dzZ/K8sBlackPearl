@@ -152,6 +152,11 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 ## Task Execution Model
 - [x] **Dynamic Task Execution Model**: Implemented a dynamic task execution model that allows for registering and retrieving `TaskRunner` implementations based on task types, enhancing extensibility.
 
+## Pod Labeling Logic Enhancement
+- [x] **Optimized Pod Labeling**:
+  - Implemented an optimized pod labeling process that checks existing labels and updates them only if necessary, reducing the number of API calls and improving overall performance.
+  - Integrated retry logic specific to pod labeling to handle intermittent API errors efficiently.
+
 ## Package Extension
 - [ ] **Support for Additional Kubernetes Resources**:
   - Develop the capability to manage and interact with a broader range of Kubernetes resources, including services, deployments, and stateful sets.
