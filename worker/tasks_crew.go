@@ -10,6 +10,7 @@ import (
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
+	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -217,6 +218,24 @@ func LoadTasksFromJSON(filePath string) ([]Task, error) {
 
 	var tasks []Task
 	err = json.Unmarshal(file, &tasks)
+	if err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
+}
+
+// LoadTasksFromYAML reads a YAML file containing an array of Task objects, unmarshals it,
+// and returns a slice of Task structs. It returns an error if the file cannot be read or
+// the YAML cannot be unmarshaled into the Task structs.
+func LoadTasksFromYAML(filePath string) ([]Task, error) {
+	file, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var tasks []Task
+	err = yaml.Unmarshal(file, &tasks)
 	if err != nil {
 		return nil, err
 	}
