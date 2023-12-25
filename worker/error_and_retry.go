@@ -52,51 +52,83 @@ func logFinalError(shipsnamespace string, taskName string, err error, maxRetries
 	)
 }
 
-// handleTaskError processes an error encountered during task execution, determining whether to retry the task.
-// It takes into account the context's cancellation state, conflict errors and employs a delay between retries.
+// handleTaskError evaluates an error encountered during task execution to determine if a retry is appropriate.
+// It checks the context's cancellation state and the nature of the error (e.g., conflict errors). If the context
+// is not canceled and the error is not a conflict, it will log the error and delay the next attempt based on the
+// specified retryDelay. This function helps to implement a retry mechanism with backoff strategy.
 //
 // Parameters:
-//   - ctx: The context governing cancellation.
-//   - clientset: The Kubernetes client set.
-//   - shipsnamespace: The namespace where the task was attempted.
-//   - err: The error encountered during the task execution.
-//   - attempt: The current retry attempt number.
-//   - task: The task being attempted.
-//   - workerIndex: The index of the worker processing the task.
-//   - maxRetries: The maximum number of retry attempts.
-//   - retryDelay: The duration to wait before retrying the task.
+//
+//	ctx: The context governing cancellation.
+//	clientset: The Kubernetes client set used for task operations.
+//	shipsnamespace: The Kubernetes namespace where the task was attempted.
+//	err: The error encountered during the task execution.
+//	attempt: The current retry attempt number.
+//	task: The task being attempted.
+//	workerIndex: The index of the worker processing the task.
+//	maxRetries: The maximum number of retry attempts allowed.
+//	retryDelay: The duration to wait before making the next retry attempt.
 //
 // Returns:
-//   - shouldContinue: A boolean indicating whether the task should be retried.
+//
+//	shouldContinue: A boolean indicating whether the task should be retried or not.
 func handleTaskError(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, err error, attempt int, task *configuration.Task, workerIndex int, maxRetries int, retryDelay time.Duration) (shouldContinue bool) {
 	if ctx.Err() != nil {
 		return false
 	}
 
-	if apierrors.IsConflict(err) {
-		if resolveErr := resolveConflict(ctx, clientset, shipsnamespace, task); resolveErr != nil {
-			return false // Return the error from resolveConflict.
-		}
-		return true // Retry immediately after resolving conflict.
+	switch {
+	case apierrors.IsConflict(err):
+		return handleConflictError(ctx, clientset, shipsnamespace, task)
+	default:
+		return handleGenericError(ctx, err, attempt, task, workerIndex, maxRetries, retryDelay)
 	}
+}
 
-	fieldslog := navigator.CreateLogFields(
-		language.TaskFetchPods,
-		shipsnamespace,
-		navigator.WithAnyZapField(zap.Int(language.Worker_Name, workerIndex)),
-		navigator.WithAnyZapField(zap.Int(language.Attempt, attempt+1)),
-		navigator.WithAnyZapField(zap.Int(language.Max_Retries, maxRetries)),
-		navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
-	)
-	// magic goes here, append fields log ":=" into binaries lmao
-	retryMessage := fmt.Sprintf("%s %s", constant.ErrorEmoji, fmt.Sprintf(language.RetryingTask, attempt+1, maxRetries))
-	navigator.LogInfoWithEmoji(
-		language.PirateEmoji,
-		fmt.Sprintf(language.TaskWorker_Name, workerIndex, retryMessage),
-		fieldslog...,
-	)
+// handleConflictError is called when a conflict error is detected during task execution. It attempts to resolve
+// the conflict by calling resolveConflict. If resolving the conflict fails, it returns false to indicate that the
+// task should not be retried. Otherwise, it returns true, suggesting that the task may be retried.
+//
+// Parameters:
+//
+//	ctx: The context governing cancellation.
+//	clientset: The Kubernetes client set used for task operations.
+//	shipsnamespace: The Kubernetes namespace where the task was attempted.
+//	task: The task being attempted.
+//
+// Returns:
+//
+//	A boolean indicating whether the task should be retried after conflict resolution.
+func handleConflictError(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task *configuration.Task) bool {
+	if resolveErr := resolveConflict(ctx, clientset, shipsnamespace, task); resolveErr != nil {
+		return false
+	}
+	return true
+}
 
+// handleGenericError handles non-conflict errors encountered during task execution. It logs the retry attempt
+// and enforces a delay before the next attempt based on retryDelay. If the context is canceled during this delay,
+// it returns false to indicate that the task should not be retried. Otherwise, it returns true to suggest that
+// the task may be retried.
+//
+// Parameters:
+//
+//	ctx: The context governing cancellation.
+//	err: The error encountered during task execution.
+//	attempt: The current retry attempt number.
+//	task: The task being attempted.
+//	workerIndex: The index of the worker processing the task.
+//	maxRetries: The maximum number of retry attempts allowed.
+//	retryDelay: The duration to wait before making the next retry attempt.
+//
+// Returns:
+//
+//	A boolean indicating whether the task should be retried or not.
+func handleGenericError(ctx context.Context, err error, attempt int, task *configuration.Task, workerIndex int, maxRetries int, retryDelay time.Duration) bool {
 	logRetryAttempt(task.Name, attempt, err, maxRetries)
 	time.Sleep(retryDelay)
+	if ctx.Err() != nil {
+		return false // Context is canceled, do not continue.
+	}
 	return true
 }

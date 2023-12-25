@@ -18,39 +18,84 @@ const (
 	retryDelay = 2 * time.Second // Delay between retries
 )
 
-// CrewWorker orchestrates the execution of tasks within a Kubernetes namespace.
-// It utilizes performTaskWithRetries to attempt each task with built-in retry logic.
-// If a task fails after the maximum number of retries, it logs the error and sends
-// a failure message through the results channel. Tasks are claimed to prevent duplicate
-// executions, and they can be released if necessary for subsequent retries.
+// CrewWorker orchestrates the execution of tasks within a Kubernetes namespace by utilizing
+// performTaskWithRetries to attempt each task with built-in retry logic. If a task fails
+// after the maximum number of retries, it logs the error and sends a failure message through
+// the results channel. Tasks are claimed to prevent duplicate executions, and they can be
+// released if necessary for subsequent retries.
 //
 // Parameters:
-//   - ctx: Context for cancellation and timeout of the worker process.
-//   - clientset: Kubernetes API client for cluster interactions.
-//   - shipsNamespace: Namespace in Kubernetes for task operations.
-//   - tasks: List of Task structs, each representing an executable task.
-//   - results: Channel to return execution results to the caller.
-//   - logger: Logger for structured logging within the worker.
-//   - taskStatus: Map to track and control the status of tasks.
-//   - workerIndex: Identifier for the worker instance for logging.
+//
+//	ctx: Context for cancellation and timeout of the worker process.
+//	clientset: Kubernetes API client for cluster interactions.
+//	shipsNamespace: Namespace in Kubernetes for task operations.
+//	tasks: List of Task structs, each representing an executable task.
+//	results: Channel to return execution results to the caller.
+//	logger: Logger for structured logging within the worker.
+//	taskStatus: Map to track and control the status of tasks.
+//	workerIndex: Identifier for the worker instance for logging.
 func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []configuration.Task, results chan<- string, logger *zap.Logger, taskStatus *TaskStatusMap, workerIndex int) {
 	for _, task := range tasks {
-		// Try to claim the task. If it's already claimed, skip it.
-		if !taskStatus.Claim(task.Name) {
-			continue
-		}
-
-		err := performTaskWithRetries(ctx, clientset, shipsNamespace, task, results, workerIndex)
-		if err != nil {
-			// If the task fails, you can choose to release it for retrying.
-			taskStatus.Release(task.Name)
-			logFinalError(shipsNamespace, task.Name, err, maxRetries)
-			results <- err.Error()
-		} else {
-			// If the task is successful, it remains claimed to prevent retries.
-			results <- fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.TaskCompleteS, task.Name))
-		}
+		processTask(ctx, clientset, shipsNamespace, task, results, logger, taskStatus, workerIndex)
 	}
+}
+
+// processTask processes an individual task within a Kubernetes namespace. It first attempts to
+// claim the task to prevent duplicate processing. If the claim is successful, it then attempts
+// to perform the task with retries. Depending on the outcome, it either handles a failed task
+// or reports a successful completion.
+//
+// Parameters:
+//
+//	ctx: Context for cancellation and timeout of the task processing.
+//	clientset: Kubernetes API client for cluster interactions.
+//	shipsNamespace: Namespace in Kubernetes where the task is executed.
+//	task: The task to be processed.
+//	results: Channel to return execution results to the caller.
+//	logger: Logger for structured logging within the worker.
+//	taskStatus: Map to track and control the status of tasks.
+//	workerIndex: Identifier for the worker instance for logging.
+func processTask(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, results chan<- string, logger *zap.Logger, taskStatus *TaskStatusMap, workerIndex int) {
+	if !taskStatus.Claim(task.Name) {
+		return
+	}
+
+	err := performTaskWithRetries(ctx, clientset, shipsNamespace, task, results, workerIndex)
+	if err != nil {
+		handleFailedTask(task, taskStatus, shipsNamespace, err, results, workerIndex)
+	} else {
+		handleSuccessfulTask(task, results, workerIndex)
+	}
+}
+
+// handleFailedTask handles the scenario when a task fails to complete after retries. It releases
+// the claim on the task, logs the final error, and sends an error message through the results channel.
+//
+// Parameters:
+//
+//	task: The task that has failed.
+//	taskStatus: Map to track and control the status of tasks.
+//	shipsNamespace: Namespace in Kubernetes associated with the task.
+//	err: The error that occurred during task processing.
+//	results: Channel to return execution results to the caller.
+//	workerIndex: Identifier for the worker instance for logging.
+func handleFailedTask(task configuration.Task, taskStatus *TaskStatusMap, shipsNamespace string, err error, results chan<- string, workerIndex int) {
+	taskStatus.Release(task.Name)
+	logFinalError(shipsNamespace, task.Name, err, maxRetries)
+	results <- err.Error()
+}
+
+// handleSuccessfulTask reports a task's successful completion by sending a success message
+// through the results channel.
+//
+// Parameters:
+//
+//	task: The task that has been successfully completed.
+//	results: Channel to return execution results to the caller.
+//	workerIndex: Identifier for the worker instance for logging.
+func handleSuccessfulTask(task configuration.Task, results chan<- string, workerIndex int) {
+	successMessage := fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.TaskCompleteS, task.Name))
+	results <- successMessage
 }
 
 // performTaskWithRetries tries to execute a task, with retries on failure.
@@ -83,6 +128,21 @@ func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset
 	return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, maxRetries)
 }
 
+// resolveConflict attempts to resolve a conflict error by retrieving the latest version of a pod involved in the task.
+// It updates the task's parameters with the new pod information, particularly the resource version, to mitigate
+// the conflict error. This function is typically called when a conflict error is detected during task execution,
+// such as when a resource has been modified concurrently.
+//
+// Parameters:
+//
+//	ctx: The context governing cancellation.
+//	clientset: The Kubernetes client set used for interacting with the Kubernetes API.
+//	shipsnamespace: The Kubernetes namespace where the pod is located.
+//	task: The task containing the parameters that need to be updated with the latest pod information.
+//
+// Returns:
+//
+//	error: An error if retrieving the latest version of the pod fails or if the pod name is not found in the task parameters.
 func resolveConflict(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task *configuration.Task) error {
 	podName, ok := task.Parameters[language.PodName].(string)
 	if !ok {
