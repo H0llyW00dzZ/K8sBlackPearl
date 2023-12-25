@@ -42,6 +42,11 @@ const (
 	FailedTOScallEdDeployment              = "Failed to scale deployment '%s' to '%d': %v"
 	FailedToGetDeployment                  = "Failed to get deployment '%s': %v"
 	ErrorFailedtoScalingDeployment         = "Failed to scale deployment"
+	ErrorConflictUpdateImage               = "Conflict encountered while updating deployment image for deployment %s Retrying..."
+	ErrorReachedMaxRetries                 = "Reached max retries for updating deployment image"
+	ErrorFailedToUpdateImage               = "Failed to update image for deployment %s: %v"
+	ErrorFailedToUpdateImageAfterRetries   = "Failed to update image for deployment %s after %d retries"
+	ErrorFailedToUpdateDeployImage         = "Failed to update deployment image"
 )
 
 const (
@@ -96,6 +101,8 @@ const (
 	WorkerSucessfully            = "Successfully labeled pods %v=%s"
 	DeploymentScaled             = "Deployment '%s' scaled to '%d'"
 	ScaledDeployment             = "Scaled deployment '%s' to '%d' replicas"
+	ImageSuccessfully            = "Image updated successfully for deployment %s to %s"
+	DeploymentImageUpdated       = "Deployment image updated successfully"
 )
 
 const (
