@@ -239,3 +239,48 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
   - Design and integrate a metrics collection system to monitor the health and efficiency of the worker processes.
   - Metrics should provide insights into the success rates of tasks, resource usage, processing times, and error rates.
   - Explore the possibility of leveraging existing monitoring tools that can be integrated with Kubernetes for streamlined metrics collection and visualization.
+
+
+# How it work ?
+
+```mermaid
+erDiagram
+    CAPTAIN_GOPHER ||--|{ CREW : "assembles crew"
+    CREW ||--|{ PROCESS-TASK : "sets sail on tasks"
+    PROCESS-TASK ||--|| HANDLE-FAILED-TASK : "navigates"
+    PROCESS-TASK ||--|| HANDLE-SUCCESSFUL-TASK : "celebrates"
+    PROCESS-TASK ||--|{ PERFORM-TASK-WITH-RETRIES : "braves storms"
+    PERFORM-TASK-WITH-RETRIES ||--|| PERFORM-TASK : "charts course"
+    PERFORM-TASK-WITH-RETRIES ||--|| RESOLVE-CONFLICT : "parleys"
+    CREW ||--|{ CREW-PROCESS-PODS : "oversees cargo"
+    CREW-PROCESS-PODS ||--|| CREW-CHECKING-IS-POD-HEALTHY : "inspects"
+
+    PROCESS-TASK ||--|{ LABELS-PODS : "flags"
+    PROCESS-TASK ||--|{ LISTS-OPTIONS : "catalogs"
+    PROCESS-TASK ||--|{ LIST-PODS : "enumerates"
+    PROCESS-TASK ||--|{ LOGS-PODS : "records"
+    PROCESS-TASK ||--|{ TASK-CREW : "rallies"
+    PROCESS-TASK ||--|{ TRACK-TASK : "maps"
+
+    LABELS-PODS ||--|| LABEL-PODS : "marks"
+    LABEL-PODS ||--|| LABEL-SINGLE-POD : "identifies"
+    LABEL-PODS ||--|| LABEL-SINGLE-POD-WITH-RESOURCE-VERSION : "specifies"
+    LABEL-SINGLE-POD-WITH-RESOURCE-VERSION ||--|| FETCH-LATEST-POD-VERSION : "retrieves"
+    LABEL-SINGLE-POD-WITH-RESOURCE-VERSION ||--|| UPDATE-POD-LABELS : "updates"
+
+    LISTS-OPTIONS ||--|| GET-LIST-OPTIONS : "offers"
+    LIST-PODS ||--|| LIST-PODS-FUNCTION : "lists"
+    LOGS-PODS ||--|| LOG-PODS : "logs"
+    LOGS-PODS ||--|| CHECK-PODS-HEALTH : "examines"
+    CHECK-PODS-HEALTH ||--|| CHECK-HEALTH-WORKER : "employs"
+    CHECK-PODS-HEALTH ||--|| LOG-RESULTS : "reports"
+
+    TASK-CREW ||--|| GET-TASK-RUNNER : "recruits"
+    GET-TASK-RUNNER ||--|| TASK-RUNNER : "represents"
+    PERFORM-TASK ||--|| TASK-RUNNER : "engages"
+
+    TRACK-TASK ||--|| TASK-STATUS-MAP : "charts"
+    TASK-STATUS-MAP ||--|| CLAIM : "claims"
+    TASK-STATUS-MAP ||--|| RELEASE : "relinquishes"
+
+```
