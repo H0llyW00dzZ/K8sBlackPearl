@@ -176,9 +176,65 @@ type CrewManageDeployments struct {
 }
 
 // TODO: Add the new TaskRunner for managing deployments.
-func (c *CrewManageDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewManageDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
 	// Note: Currently unimplemented, not ready yet unless you want to implement it as expert.
 	// This could involve scaling deployments, updating images, etc.
+	return nil
+}
+
+type CrewScaleDeployments struct {
+	shipsNamespace string
+	workerIndex    int
+}
+
+func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+	// Use the provided logging pattern
+	fields := navigator.CreateLogFields(
+		language.TaskManageDeployments,
+		shipsNamespace,
+		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+	)
+	navigator.LogInfoWithEmoji(
+		language.PirateEmoji,
+		fmt.Sprintf(language.ManagingDeployments, workerIndex),
+		fields...,
+	)
+
+	// Assume parameters contain "deploymentName" and "replicas" for scaling
+	deploymentName, ok := parameters[deploymentName].(string)
+	if !ok {
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
+		return fmt.Errorf(language.ErrorParameterDeploymentName)
+	}
+
+	replicas, ok := parameters[repliCas].(int)
+	if !ok {
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
+		return fmt.Errorf(language.ErrorParameterReplicas)
+	}
+
+	// Create a channel for results
+	results := make(chan string, 1)
+	defer close(results)
+
+	// Retrieve the logger from the context or a global variable
+	logger := zap.L()
+
+	// Call the function to scale the deployment
+	err := ScaleDeployment(ctx, clientset, shipsNamespace, deploymentName, replicas, results, logger)
+	if err != nil {
+		// Log the error with the custom logging function
+		errorFields := append(fields, zap.String(language.Error, err.Error()))
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.ErrorScalingDeployment, errorFields...)
+		return err
+	}
+
+	// Read from the results channel
+	for scaleResult := range results {
+		// Log the result with the custom logging function
+		navigator.LogInfoWithEmoji(language.PirateEmoji, scaleResult, fields...)
+	}
+
 	return nil
 }
 
