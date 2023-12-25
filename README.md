@@ -192,6 +192,16 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 
 # TODO
 
+## 🏴‍☠️ Advanced Dependency Injection Clarity
+- [x] **Dependency Injection Implementation**: Confirmed the implementation of Dependency Injection (DI) across the system, providing flexibility and improving testability.
+  - Verified that Kubernetes ClientSet is passed as a parameter to functions, allowing for easy replacement during testing.
+  - Ensured that the `TaskRunner` interface and its registry pattern are used to inject task-specific logic, promoting loose coupling and easy extension.
+  - Checked that `zap.Logger` instances are passed to functions requiring logging capabilities, which enables custom logger configurations for different environments.
+  - Confirmed that `context.Context` is passed through functions to manage cancellation and timeouts, allowing the caller to control the behavior of the function execution.
+
+> [!NOTE]
+> This specialized feature has been successfully integrated.
+
 ## CrewWorker Function Improvements
 - [x] **Error Handling and Retry Logic**: Successfully integrated error handling and retry mechanisms within the `CrewWorker` function to manage transient errors gracefully.
 
