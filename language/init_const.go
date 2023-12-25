@@ -41,6 +41,7 @@ const (
 	FailedToScaleDeployment                = "Failed to scale deployment '%s' to '%d' after %d retries: %v"
 	FailedTOScallEdDeployment              = "Failed to scale deployment '%s' to '%d': %v"
 	FailedToGetDeployment                  = "Failed to get deployment '%s': %v"
+	ErrorFailedtoScalingDeployment         = "Failed to scale deployment"
 )
 
 const (
@@ -76,6 +77,8 @@ const (
 	Worker_Name           = "crew_worker"
 	TaskLabelPods         = "WriteLabelPods"
 	TaskManageDeployments = "ManageDeployments"
+	TaskScaleDeployment   = "ScaleDeployment"
+	ScalingDeployment     = "Crew Worker %d: Scaling deployments"
 	ManagingDeployments   = "Crew Worker %d: Managing deployments"
 )
 

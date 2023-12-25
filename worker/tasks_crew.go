@@ -199,13 +199,13 @@ type CrewScaleDeployments struct {
 func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
 	// Use the provided logging pattern
 	fields := navigator.CreateLogFields(
-		language.TaskManageDeployments,
+		language.TaskScaleDeployment,
 		shipsNamespace,
 		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
 	)
 	navigator.LogInfoWithEmoji(
 		language.PirateEmoji,
-		fmt.Sprintf(language.ManagingDeployments, workerIndex),
+		fmt.Sprintf(language.ScalingDeployment, workerIndex),
 		fields...,
 	)
 
@@ -234,7 +234,8 @@ func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Cl
 	if err != nil {
 		// Log the error with the custom logging function
 		errorFields := append(fields, zap.String(language.Error, err.Error()))
-		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.ErrorScalingDeployment, errorFields...)
+		failedMessage := fmt.Sprintf("%v %s", constant.ErrorEmoji, language.ErrorFailedtoScalingDeployment)
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, failedMessage, errorFields...)
 		return err
 	}
 
