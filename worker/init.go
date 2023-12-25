@@ -22,7 +22,11 @@ func init() {
 
 	// Register the new TaskRunner for managing deployments.
 	RegisterTaskRunner("CrewManageDeployments", func() TaskRunner { return &CrewManageDeployments{} })
-	// register the new TaskRunner for scaling deployments.
+
+	// Register the new TaskRunner for scaling deployments.
 	RegisterTaskRunner("CrewScaleDeployments", func() TaskRunner { return &CrewScaleDeployments{} })
+
+	// Register the new TaskRunner for updating image deployments.
+	RegisterTaskRunner("CrewUpdateImageDeployments", func() TaskRunner { return &CrewUpdateImageDeployments{} })
 
 }
