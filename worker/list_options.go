@@ -23,19 +23,19 @@ import (
 func getListOptions(params map[string]interface{}) (v1.ListOptions, error) {
 	listOptions := v1.ListOptions{}
 
-	labelSelector, ok := params["labelSelector"].(string)
+	labelSelector, ok := params[labelSelector].(string)
 	if !ok {
 		return listOptions, fmt.Errorf(language.ErrorParamLabelSelector)
 	}
 	listOptions.LabelSelector = labelSelector
 
-	fieldSelector, ok := params["fieldSelector"].(string)
+	fieldSelector, ok := params[fieldSelector].(string)
 	if !ok {
 		return listOptions, fmt.Errorf(language.ErrorParamFieldSelector)
 	}
 	listOptions.FieldSelector = fieldSelector
 
-	limit, ok := params["limit"].(int)
+	limit, ok := params[limIt].(int)
 	if !ok {
 		return listOptions, fmt.Errorf(language.ErrorParamLimit)
 	}
