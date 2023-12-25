@@ -52,7 +52,7 @@
 //   - CrewLabelPods: Updates the labels on a pod, if necessary, based on the provided
 //     labeling rules and specifications.
 //
-//   - ScaleDeployment: Scales a Kubernetes deployment to a specified number of replicas,
+//   - CrewScaleDeployment: Scales a Kubernetes deployment to a specified number of replicas,
 //     with retries on conflicts. It provides detailed logs and returns success or failure
 //     messages through a results channel.
 //
