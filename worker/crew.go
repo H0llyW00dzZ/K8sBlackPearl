@@ -113,11 +113,11 @@ func handleSuccessfulTask(task configuration.Task, results chan<- string, worker
 //
 // Returns:
 //   - error: Error if the task fails after all retry attempts.
-func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task configuration.Task, results chan<- string, workerIndex int) error {
+func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, results chan<- string, workerIndex int) error {
 	for attempt := 0; attempt < maxRetries; attempt++ {
-		err := performTask(ctx, clientset, shipsnamespace, task, workerIndex)
+		err := performTask(ctx, clientset, shipsNamespace, task, workerIndex)
 		if err != nil {
-			if !handleTaskError(ctx, clientset, shipsnamespace, err, attempt, &task, workerIndex, maxRetries, retryDelay) {
+			if !handleTaskError(ctx, clientset, shipsNamespace, err, attempt, &task, workerIndex, maxRetries, retryDelay) {
 				return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, maxRetries)
 			}
 		} else {
@@ -143,12 +143,12 @@ func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset
 // Returns:
 //
 //	error: An error if retrieving the latest version of the pod fails or if the pod name is not found in the task parameters.
-func resolveConflict(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task *configuration.Task) error {
+func resolveConflict(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task *configuration.Task) error {
 	podName, ok := task.Parameters[language.PodName].(string)
 	if !ok {
 		return fmt.Errorf(language.ErrorPodNameParameter)
 	}
-	updatedPod, err := getLatestVersionOfPod(ctx, clientset, shipsnamespace, podName)
+	updatedPod, err := getLatestVersionOfPod(ctx, clientset, shipsNamespace, podName)
 	if err != nil {
 		return err // Return the error if we can't get the latest version.
 	}
