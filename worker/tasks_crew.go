@@ -25,7 +25,8 @@ type TaskRunner interface {
 // This struct is intended to be a placeholder and should be extended to implement
 // the backup logic for the task it represents.
 type CrewGetPods struct {
-	workerIndex int
+	shipsNamespace string
+	workerIndex    int
 }
 
 // Run prints the task parameters to stdout. This method should be replaced with
@@ -60,7 +61,8 @@ func GetTaskRunner(taskType string) (TaskRunner, error) {
 // CrewGetPodsTaskRunner is an implementation of TaskRunner that lists and logs all pods
 // in a given Kubernetes namespace.
 type CrewGetPodsTaskRunner struct {
-	workerIndex int
+	shipsNamespace string
+	workerIndex    int
 }
 
 // Run lists all pods in the specified namespace and logs each pod's name and status.
@@ -96,7 +98,8 @@ func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.C
 // CrewProcessCheckHealthTask is an implementation of TaskRunner that checks the health of each pod
 // in a given Kubernetes namespace and sends the results to a channel.
 type CrewProcessCheckHealthTask struct {
-	workerIndex int
+	shipsNamespace string
+	workerIndex    int
 }
 
 // Run iterates over the pods in the specified namespace, checks their health status,
@@ -130,7 +133,8 @@ func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kuberne
 // CrewLabelPodsTaskRunner is an implementation of TaskRunner that labels all pods
 // in a given Kubernetes namespace with a specific label.
 type CrewLabelPodsTaskRunner struct {
-	workerIndex int
+	shipsNamespace string
+	workerIndex    int
 }
 
 // CrewLabelPodsTaskRunner is an implementation of the TaskRunner interface that applies a set of labels
@@ -167,7 +171,8 @@ func (c *CrewLabelPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes
 
 // TODO: Add the new TaskRunner for managing deployments.
 type CrewManageDeployments struct {
-	workerIndex int
+	shipsNamespace string
+	workerIndex    int
 }
 
 // TODO: Add the new TaskRunner for managing deployments.
