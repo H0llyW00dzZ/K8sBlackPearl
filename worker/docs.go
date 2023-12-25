@@ -1,7 +1,7 @@
 // Package worker provides a set of tools designed to facilitate the interaction with
 // Kubernetes resources from within a cluster. It offers a convenient abstraction for
 // managing Kubernetes operations, focusing on pod health checks, pod labeling, structured logging,
-// and task configuration through YAML or JSON files.
+// scaling deployments, and task configuration through YAML or JSON files.
 //
 // The package is intended for applications running as pods within Kubernetes clusters
 // and leverages in-cluster configuration to establish a clientset for API interactions.
@@ -24,13 +24,16 @@
 //   - Configuration loading from YAML files has been added, enhancing the flexibility
 //     and configurability of task management within the worker processes.
 //
+//   - Scaling deployments is now supported with functions that allow for adjusting the
+//     number of replicas with retry logic to handle conflicts.
+//
 // # Functions
 //
 //   - NewKubernetesClient: Creates a new Kubernetes clientset configured for in-cluster
 //     communication with the Kubernetes API server.
 //
 //   - CrewWorker: Orchestrates a worker process to perform tasks such as health checks,
-//     labeling of pods, and other configurable tasks within a specified namespace. It includes
+//     labeling of pods, scaling deployments, and other configurable tasks within a specified namespace. It includes
 //     retry logic to handle transient errors and respects cancellation and timeout contexts.
 //     Structured logging is used to provide detailed contextual information.
 //
@@ -49,13 +52,17 @@
 //   - CrewLabelPods: Updates the labels on a pod, if necessary, based on the provided
 //     labeling rules and specifications.
 //
+//   - ScaleDeployment: Scales a Kubernetes deployment to a specified number of replicas,
+//     with retries on conflicts. It provides detailed logs and returns success or failure
+//     messages through a results channel.
+//
 // Usage:
 //
 // Initialize the Kubernetes client using NewKubernetesClient, then leverage the client
-// to perform operations such as retrieving and processing pods within a namespace.
-// Contexts are used to manage the lifecycle of the worker processes, including graceful
-// shutdowns and cancellation. Task configurations can be loaded from a YAML file for
-// enhanced flexibility.
+// to perform operations such as retrieving and processing pods within a namespace, and
+// scaling deployments as required. Contexts are used to manage the lifecycle of the worker
+// processes, including graceful shutdowns and cancellation. Task configurations can be loaded
+// from a YAML file for enhanced flexibility.
 //
 // Example:
 //
@@ -94,8 +101,8 @@
 //   - Pod Labeling Logic has been enhanced to perform more efficiently by minimizing
 //     unnecessary API calls, and it now includes robust error handling and retry mechanisms.
 //
-//   - Configuration management has been improved by enabling the loading of task
-//     configurations from YAML files, offering greater versatility and ease of use.
+//   - The scaling functionality has been introduced to adjust deployment sizes with
+//     conflict resolution strategies, catering to dynamic workload requirements.
 //
 // # TODO
 //
