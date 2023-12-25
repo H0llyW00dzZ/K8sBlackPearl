@@ -128,6 +128,21 @@ func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset
 	return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, maxRetries)
 }
 
+// resolveConflict attempts to resolve a conflict error by retrieving the latest version of a pod involved in the task.
+// It updates the task's parameters with the new pod information, particularly the resource version, to mitigate
+// the conflict error. This function is typically called when a conflict error is detected during task execution,
+// such as when a resource has been modified concurrently.
+//
+// Parameters:
+//
+//	ctx: The context governing cancellation.
+//	clientset: The Kubernetes client set used for interacting with the Kubernetes API.
+//	shipsnamespace: The Kubernetes namespace where the pod is located.
+//	task: The task containing the parameters that need to be updated with the latest pod information.
+//
+// Returns:
+//
+//	error: An error if retrieving the latest version of the pod fails or if the pod name is not found in the task parameters.
 func resolveConflict(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task *configuration.Task) error {
 	podName, ok := task.Parameters[language.PodName].(string)
 	if !ok {
