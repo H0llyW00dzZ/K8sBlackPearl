@@ -12,3 +12,14 @@ const (
 	cannotCreateK8s = "could not create Kubernetes client: %v"
 	errEnvVar       = "environment variable %s not set"
 )
+
+// defined object
+const (
+	metaData      = "metadata"
+	labeLs        = "labels"
+	labeLKey      = "labelKey"
+	labeLValue    = "labelValue"
+	labelSelector = "labelSelector"
+	fieldSelector = "fieldSelector"
+	limIt         = "limit"
+)
