@@ -182,11 +182,20 @@ func (c *CrewManageDeployments) Run(ctx context.Context, clientset *kubernetes.C
 	return nil
 }
 
+// CrewScaleDeployments is an implementation of the TaskRunner interface that scales deployments
+// within a given Kubernetes namespace. It is responsible for parsing the scaling parameters,
+// performing the scaling operation, and logging the activity. The Run method orchestrates these steps,
+// handling any errors that occur during the execution and ensuring that the scaling task is
+// carried out effectively.
 type CrewScaleDeployments struct {
 	shipsNamespace string
 	workerIndex    int
 }
 
+// Run executes the scaling operation for a Kubernetes deployment. It reads the 'deploymentName' and 'replicas'
+// from the task parameters, validates them, and then calls the ScaleDeployment function to adjust the number
+// of replicas for the deployment. The method logs the initiation and completion of the scaling operation
+// and reports any errors encountered during the process.
 func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
 	// Use the provided logging pattern
 	fields := navigator.CreateLogFields(
@@ -213,7 +222,7 @@ func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Cl
 		return fmt.Errorf(language.ErrorParameterReplicas)
 	}
 
-	// Create a channel for results
+	// Create a channel for results and defer its closure
 	results := make(chan string, 1)
 	defer close(results)
 
@@ -229,7 +238,7 @@ func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Cl
 		return err
 	}
 
-	// Read from the results channel
+	// Read from the results channel and log the outcome
 	for scaleResult := range results {
 		// Log the result with the custom logging function
 		navigator.LogInfoWithEmoji(language.PirateEmoji, scaleResult, fields...)
