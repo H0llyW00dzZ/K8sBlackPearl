@@ -176,9 +176,74 @@ type CrewManageDeployments struct {
 }
 
 // TODO: Add the new TaskRunner for managing deployments.
-func (c *CrewManageDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewManageDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
 	// Note: Currently unimplemented, not ready yet unless you want to implement it as expert.
 	// This could involve scaling deployments, updating images, etc.
+	return nil
+}
+
+// CrewScaleDeployments is an implementation of the TaskRunner interface that scales deployments
+// within a given Kubernetes namespace. It is responsible for parsing the scaling parameters,
+// performing the scaling operation, and logging the activity. The Run method orchestrates these steps,
+// handling any errors that occur during the execution and ensuring that the scaling task is
+// carried out effectively.
+type CrewScaleDeployments struct {
+	shipsNamespace string
+	workerIndex    int
+}
+
+// Run executes the scaling operation for a Kubernetes deployment. It reads the 'deploymentName' and 'replicas'
+// from the task parameters, validates them, and then calls the ScaleDeployment function to adjust the number
+// of replicas for the deployment. The method logs the initiation and completion of the scaling operation
+// and reports any errors encountered during the process.
+func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+	// Use the provided logging pattern
+	fields := navigator.CreateLogFields(
+		language.TaskManageDeployments,
+		shipsNamespace,
+		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+	)
+	navigator.LogInfoWithEmoji(
+		language.PirateEmoji,
+		fmt.Sprintf(language.ManagingDeployments, workerIndex),
+		fields...,
+	)
+
+	// Assume parameters contain "deploymentName" and "replicas" for scaling
+	deploymentName, ok := parameters[deploymentName].(string)
+	if !ok {
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
+		return fmt.Errorf(language.ErrorParameterDeploymentName)
+	}
+
+	replicas, ok := parameters[repliCas].(int)
+	if !ok {
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
+		return fmt.Errorf(language.ErrorParameterReplicas)
+	}
+
+	// Create a channel for results and defer its closure
+	results := make(chan string, 1)
+	defer close(results)
+
+	// Retrieve the logger from the context or a global variable
+	logger := zap.L()
+
+	// Call the function to scale the deployment
+	err := ScaleDeployment(ctx, clientset, shipsNamespace, deploymentName, replicas, results, logger)
+	if err != nil {
+		// Log the error with the custom logging function
+		errorFields := append(fields, zap.String(language.Error, err.Error()))
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.ErrorScalingDeployment, errorFields...)
+		return err
+	}
+
+	// Read from the results channel and log the outcome
+	for scaleResult := range results {
+		// Log the result with the custom logging function
+		navigator.LogInfoWithEmoji(language.PirateEmoji, scaleResult, fields...)
+	}
+
 	return nil
 }
 

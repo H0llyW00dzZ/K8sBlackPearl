@@ -34,6 +34,13 @@ const (
 	ErrorFailedToCompleteTaskDueToConflict = "Failed to complete task %s after %d attempts due to conflict: %v"
 	ErrorPodNameParameter                  = "podName parameter is missing or not a string"
 	ErrorFailedToUpdateLabelSPods          = "Failed to update labels for pod %s: %v"
+	ErrorScalingDeployment                 = "Failed to scale deployment '%s' to '%d': %v"
+	ErrorParameterDeploymentName           = "parameter 'deploymentName' is required and must be a string"
+	ErrorParameterReplicas                 = "parameter 'replicas' is required and must be an integer"
+	ErrorConflict                          = "Conflict detected when scaling deployment '%s', resolving..."
+	FailedToScaleDeployment                = "Failed to scale deployment '%s' to '%d' after %d retries: %v"
+	FailedTOScallEdDeployment              = "Failed to scale deployment '%s' to '%d': %v"
+	FailedToGetDeployment                  = "Failed to get deployment '%s': %v"
 )
 
 const (
@@ -54,20 +61,22 @@ const (
 )
 
 const (
-	TaskLabelKey      = "LabelKey"
-	TaskCheckHealth   = "CheckHealth"
-	TaskGetPod        = "GetPod"
-	TaskFetchPods     = "FetchPods"
-	TaskProcessPod    = "ProcessPod"
-	TaskCreatePod     = "CreatePod"
-	TaskDeletePod     = "DeletePod"
-	TaskCompleteS     = "Task '%s' completed successfully."
-	TaskWorker_Name   = "Crew Worker %d: %s"
-	TaskNumber        = "The number of workers and the number of tasks do not match."
-	RunningTaskBackup = "Running BackupTaskRunner with parameters:"
-	Task_Name         = "task_name"
-	Worker_Name       = "crew_worker"
-	TaskLabelPods     = "WriteLabelPods"
+	TaskLabelKey          = "LabelKey"
+	TaskCheckHealth       = "CheckHealth"
+	TaskGetPod            = "GetPod"
+	TaskFetchPods         = "FetchPods"
+	TaskProcessPod        = "ProcessPod"
+	TaskCreatePod         = "CreatePod"
+	TaskDeletePod         = "DeletePod"
+	TaskCompleteS         = "Task '%s' completed successfully."
+	TaskWorker_Name       = "Crew Worker %d: %s"
+	TaskNumber            = "The number of workers and the number of tasks do not match."
+	RunningTaskBackup     = "Running BackupTaskRunner with parameters:"
+	Task_Name             = "task_name"
+	Worker_Name           = "crew_worker"
+	TaskLabelPods         = "WriteLabelPods"
+	TaskManageDeployments = "ManageDeployments"
+	ManagingDeployments   = "Crew Worker %d: Managing deployments"
 )
 
 const (
@@ -82,6 +91,8 @@ const (
 	CrewWorkerUnit               = "crew_worker_unit"
 	StartWritingLabelPods        = "Starting to writing label pods with %s=%s"
 	WorkerSucessfully            = "Successfully labeled pods %v=%s"
+	DeploymentScaled             = "Deployment '%s' scaled to '%d'"
+	ScaledDeployment             = "Scaled deployment '%s' to '%d' replicas"
 )
 
 const (
@@ -102,6 +113,7 @@ const (
 
 const (
 	PirateEmoji = "🏴‍☠️ "
+	SwordEmoji  = "⚔️ "
 )
 
 const (
