@@ -210,7 +210,7 @@ func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Cl
 	)
 
 	// Assume parameters contain "deploymentName" and "replicas" for scaling
-	deploymentName, ok := parameters[deploymentName].(string)
+	deploymentName, ok := parameters[deploYmentName].(string)
 	if !ok {
 		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
 		return fmt.Errorf(language.ErrorParameterDeploymentName)
@@ -243,6 +243,68 @@ func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Cl
 	for scaleResult := range results {
 		// Log the result with the custom logging function
 		navigator.LogInfoWithEmoji(language.PirateEmoji, scaleResult, fields...)
+	}
+
+	return nil
+}
+
+// CrewUpdateImageDeployments contains information required to update the image of a Kubernetes deployment.
+type CrewUpdateImageDeployments struct {
+	// shipsNamespace specifies the Kubernetes namespace where the deployments are located.
+	shipsNamespace string
+
+	// workerIndex is an identifier for the worker that is executing the update operation.
+	// This can be used for logging and tracking the progress of the update across multiple workers.
+	workerIndex int
+}
+
+// Run performs the update operation for a Kubernetes deployment's container image.
+// It extracts the deployment name, container name, and new image from the task parameters,
+// and then proceeds with the update using the UpdateDeploymentImage function.
+// The method logs the start and end of the update operation and handles any errors encountered.
+func (c *CrewUpdateImageDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+	// Define logging fields for structured logging
+	fields := navigator.CreateLogFields(
+		language.TaskUpdateDeploymentImage,
+		shipsNamespace,
+		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+	)
+
+	// Log the start of the update operation
+	navigator.LogInfoWithEmoji(
+		language.PirateEmoji,
+		fmt.Sprintf(language.UpdatingImage, workerIndex),
+		fields...,
+	)
+
+	// Extract deployment parameters from the provided task parameters
+	deploymentName, containerName, newImage, err := extractDeploymentParameters(parameters)
+	if err != nil {
+		// Log the error and return if parameter extraction fails
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, err.Error(), fields...)
+		return err
+	}
+
+	// Create a channel to receive results from the update operation
+	results := make(chan string, 1)
+	defer close(results)
+
+	// Retrieve the logger instance
+	logger := zap.L()
+
+	// Update the deployment image using the extracted parameters
+	err = UpdateDeploymentImage(ctx, clientset, shipsNamespace, deploymentName, containerName, newImage, results, logger)
+	if err != nil {
+		// Log the error and return if the update operation fails
+		errorFields := append(fields, zap.String(language.Error, err.Error()))
+		failedMessage := fmt.Sprintf("%v %s", constant.ErrorEmoji, language.ErrorFailedToUpdateDeployImage)
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, failedMessage, errorFields...)
+		return err
+	}
+
+	// Process and log the results from the update operation
+	for updateResult := range results {
+		navigator.LogInfoWithEmoji(language.PirateEmoji, updateResult, fields...)
 	}
 
 	return nil

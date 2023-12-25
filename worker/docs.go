@@ -1,7 +1,7 @@
 // Package worker provides a set of tools designed to facilitate the interaction with
 // Kubernetes resources from within a cluster. It offers a convenient abstraction for
 // managing Kubernetes operations, focusing on pod health checks, pod labeling, structured logging,
-// scaling deployments, and task configuration through YAML or JSON files.
+// scaling deployments, updating deployment images, and task configuration through YAML or JSON files.
 //
 // The package is intended for applications running as pods within Kubernetes clusters
 // and leverages in-cluster configuration to establish a clientset for API interactions.
@@ -27,14 +27,18 @@
 //   - Scaling deployments is now supported with functions that allow for adjusting the
 //     number of replicas with retry logic to handle conflicts.
 //
+//   - Updating deployment images has been introduced, enabling the change of container images
+//     within deployments. This includes handling retries on update conflicts and reporting
+//     the outcome of the operation.
+//
 // # Functions
 //
 //   - NewKubernetesClient: Creates a new Kubernetes clientset configured for in-cluster
 //     communication with the Kubernetes API server.
 //
 //   - CrewWorker: Orchestrates a worker process to perform tasks such as health checks,
-//     labeling of pods, scaling deployments, and other configurable tasks within a specified namespace. It includes
-//     retry logic to handle transient errors and respects cancellation and timeout contexts.
+//     labeling of pods, scaling deployments, updating deployment images, and other configurable tasks within a specified namespace.
+//     It includes retry logic to handle transient errors and respects cancellation and timeout contexts.
 //     Structured logging is used to provide detailed contextual information.
 //
 //   - LoadTasksFromYAML: Loads task configurations from a YAML file, allowing for
@@ -56,13 +60,16 @@
 //     with retries on conflicts. It provides detailed logs and returns success or failure
 //     messages through a results channel.
 //
+//   - UpdateDeploymentImage: Updates the image of a specified container within a deployment,
+//     handling retries on conflicts and reporting the outcome through a results channel.
+//
 // Usage:
 //
 // Initialize the Kubernetes client using NewKubernetesClient, then leverage the client
-// to perform operations such as retrieving and processing pods within a namespace, and
-// scaling deployments as required. Contexts are used to manage the lifecycle of the worker
-// processes, including graceful shutdowns and cancellation. Task configurations can be loaded
-// from a YAML file for enhanced flexibility.
+// to perform operations such as retrieving and processing pods within a namespace, scaling
+// deployments, and updating deployment images as required. Contexts are used to manage the
+// lifecycle of the worker processes, including graceful shutdowns and cancellation. Task
+// configurations can be loaded from a YAML file for enhanced flexibility.
 //
 // Example:
 //
@@ -103,6 +110,9 @@
 //
 //   - The scaling functionality has been introduced to adjust deployment sizes with
 //     conflict resolution strategies, catering to dynamic workload requirements.
+//
+//   - Image update functionality has been added to modify the image of a container within
+//     a deployment, with built-in retry logic for handling update conflicts.
 //
 // # TODO
 //

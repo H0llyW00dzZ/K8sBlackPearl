@@ -37,11 +37,18 @@ const (
 	ErrorScalingDeployment                 = "Failed to scale deployment '%s' to '%d': %v"
 	ErrorParameterDeploymentName           = "parameter 'deploymentName' is required and must be a string"
 	ErrorParameterReplicas                 = "parameter 'replicas' is required and must be an integer"
+	ErrorParameterNewImage                 = "parameter 'newImage' is required and must be a string"
+	ErrorParameterContainerName            = "parameter 'containerName' is required and must be a string"
 	ErrorConflict                          = "Conflict detected when scaling deployment '%s', resolving..."
 	FailedToScaleDeployment                = "Failed to scale deployment '%s' to '%d' after %d retries: %v"
 	FailedTOScallEdDeployment              = "Failed to scale deployment '%s' to '%d': %v"
 	FailedToGetDeployment                  = "Failed to get deployment '%s': %v"
 	ErrorFailedtoScalingDeployment         = "Failed to scale deployment"
+	ErrorConflictUpdateImage               = "Conflict encountered while updating deployment image for deployment %s Retrying..."
+	ErrorReachedMaxRetries                 = "Reached max retries for updating deployment image"
+	ErrorFailedToUpdateImage               = "Failed to update image for deployment %s: %v"
+	ErrorFailedToUpdateImageAfterRetries   = "Failed to update image for deployment %s after %d retries"
+	ErrorFailedToUpdateDeployImage         = "Failed to update deployment image"
 )
 
 const (
@@ -62,24 +69,26 @@ const (
 )
 
 const (
-	TaskLabelKey          = "LabelKey"
-	TaskCheckHealth       = "CheckHealth"
-	TaskGetPod            = "GetPod"
-	TaskFetchPods         = "FetchPods"
-	TaskProcessPod        = "ProcessPod"
-	TaskCreatePod         = "CreatePod"
-	TaskDeletePod         = "DeletePod"
-	TaskCompleteS         = "Task '%s' completed successfully."
-	TaskWorker_Name       = "Crew Worker %d: %s"
-	TaskNumber            = "The number of workers and the number of tasks do not match."
-	RunningTaskBackup     = "Running BackupTaskRunner with parameters:"
-	Task_Name             = "task_name"
-	Worker_Name           = "crew_worker"
-	TaskLabelPods         = "WriteLabelPods"
-	TaskManageDeployments = "ManageDeployments"
-	TaskScaleDeployment   = "ScaleDeployment"
-	ScalingDeployment     = "Crew Worker %d: Scaling deployments"
-	ManagingDeployments   = "Crew Worker %d: Managing deployments"
+	TaskLabelKey              = "LabelKey"
+	TaskCheckHealth           = "CheckHealth"
+	TaskGetPod                = "GetPod"
+	TaskFetchPods             = "FetchPods"
+	TaskProcessPod            = "ProcessPod"
+	TaskCreatePod             = "CreatePod"
+	TaskDeletePod             = "DeletePod"
+	TaskCompleteS             = "Task '%s' completed successfully."
+	TaskWorker_Name           = "Crew Worker %d: %s"
+	TaskNumber                = "The number of workers and the number of tasks do not match."
+	RunningTaskBackup         = "Running BackupTaskRunner with parameters:"
+	Task_Name                 = "task_name"
+	Worker_Name               = "crew_worker"
+	TaskLabelPods             = "WriteLabelPods"
+	TaskManageDeployments     = "ManageDeployments"
+	TaskScaleDeployment       = "ScaleDeployment"
+	TaskUpdateDeploymentImage = "UpdateDeploymentImage"
+	ScalingDeployment         = "Crew Worker %d: Scaling deployments"
+	ManagingDeployments       = "Crew Worker %d: Managing deployments"
+	UpdatingImage             = "Crew Worker %d: Updating deployment image"
 )
 
 const (
@@ -96,6 +105,9 @@ const (
 	WorkerSucessfully            = "Successfully labeled pods %v=%s"
 	DeploymentScaled             = "Deployment '%s' scaled to '%d'"
 	ScaledDeployment             = "Scaled deployment '%s' to '%d' replicas"
+	ImageSuccessfully            = "Image updated successfully for deployment %s to %s"
+	DeploymentImageUpdated       = "Deployment image updated successfully"
+	UpdatingDeploymentImage      = "Updating deployment image"
 )
 
 const (
