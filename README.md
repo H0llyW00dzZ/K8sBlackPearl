@@ -206,6 +206,8 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 
 ## Task Execution Model
 - [x] **Dynamic Task Execution Model**: Implemented a dynamic task execution model that allows for registering and retrieving `TaskRunner` implementations based on task types, enhancing extensibility.
+- [x] **Multi-Namespace Support**: [`Enhanced`](https://github.com/H0llyW00dzZ/K8sBlackPearl/pull/37) the task execution model to support multiple namespaces, allowing `CrewWorker` to operate across various Kubernetes namespaces and expand its operational range.
+
 > [!NOTE]
 > This specialized feature has been successfully integrated.
 
