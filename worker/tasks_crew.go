@@ -67,11 +67,11 @@ type CrewGetPodsTaskRunner struct {
 
 // Run lists all pods in the specified namespace and logs each pod's name and status.
 // It uses the provided Kubernetes clientset and context to interact with the Kubernetes cluster.
-func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
 
 	fields := navigator.CreateLogFields(
 		language.TaskFetchPods,
-		shipsnamespace,
+		shipsNamespace,
 		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
 	)
 	navigator.LogInfoWithEmoji(
@@ -86,7 +86,7 @@ func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.C
 		return err
 	}
 
-	podList, err := listPods(ctx, clientset, shipsnamespace, listOptions)
+	podList, err := listPods(ctx, clientset, shipsNamespace, listOptions)
 	if err != nil {
 		return err
 	}
@@ -105,10 +105,10 @@ type CrewProcessCheckHealthTask struct {
 // Run iterates over the pods in the specified namespace, checks their health status,
 // and sends a formatted status message to the provided results channel.
 // It respects the context's cancellation signal and stops processing if the context is cancelled.
-func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
 	fields := navigator.CreateLogFields(
 		language.TaskCheckHealth,
-		shipsnamespace,
+		shipsNamespace,
 		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
 	)
 	navigator.LogInfoWithEmoji(
@@ -121,7 +121,7 @@ func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kuberne
 		return err
 	}
 
-	podList, err := listPods(ctx, clientset, shipsnamespace, listOptions)
+	podList, err := listPods(ctx, clientset, shipsNamespace, listOptions)
 	if err != nil {
 		return err
 	}
@@ -142,10 +142,10 @@ type CrewLabelPodsTaskRunner struct {
 // invoking the labeling operation, and logging the process. The Run method orchestrates these steps,
 // handling any errors that occur during the execution and ensuring that the task's intent is
 // fulfilled effectively.
-func (c *CrewLabelPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewLabelPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
 	fields := navigator.CreateLogFields(
 		language.TaskLabelPods,
-		shipsnamespace,
+		shipsNamespace,
 		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
 	)
 
@@ -157,7 +157,7 @@ func (c *CrewLabelPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes
 
 	navigator.LogInfoWithEmoji(language.PirateEmoji, fmt.Sprintf(language.StartWritingLabelPods, labelKey, labelValue), fields...)
 
-	err = LabelPods(ctx, clientset, shipsnamespace, labelKey, labelValue)
+	err = LabelPods(ctx, clientset, shipsNamespace, labelKey, labelValue)
 	if err != nil {
 		errorFields := append(fields, zap.String(language.Error, err.Error()))
 		failedMessage := fmt.Sprintf("%v %s", constant.ErrorEmoji, language.ErrorFailedToWriteLabel)
