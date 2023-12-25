@@ -86,8 +86,8 @@ func updatePodLabels(ctx context.Context, clientset *kubernetes.Clientset, pod *
 	pod.Labels = getUpdatedLabels(pod.Labels, labelKey, labelValue)
 
 	patchData, err := json.Marshal(map[string]interface{}{
-		"metadata": map[string]interface{}{
-			"labels": pod.Labels,
+		metaData: map[string]interface{}{
+			labeLs: pod.Labels,
 		},
 	})
 	if err != nil {
@@ -217,12 +217,12 @@ func labelSinglePod(ctx context.Context, clientset *kubernetes.Clientset, pod *c
 // by the caller to ensure the labeling operation does not proceed with invalid parameters.
 func extractLabelParameters(parameters map[string]interface{}) (labelKey string, labelValue string, err error) {
 	var ok bool
-	labelKey, ok = parameters["labelKey"].(string)
+	labelKey, ok = parameters[labeLKey].(string)
 	if !ok {
 		return "", "", fmt.Errorf(language.ErrorParamLabelKey)
 	}
 
-	labelValue, ok = parameters["labelValue"].(string)
+	labelValue, ok = parameters[labeLValue].(string)
 	if !ok {
 		return "", "", fmt.Errorf(language.ErrorParamLabelabelValue)
 	}
