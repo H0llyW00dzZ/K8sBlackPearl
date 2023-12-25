@@ -15,11 +15,15 @@ const (
 
 // defined object
 const (
-	metaData      = "metadata"
-	labeLs        = "labels"
-	labeLKey      = "labelKey"
-	labeLValue    = "labelValue"
-	labelSelector = "labelSelector"
-	fieldSelector = "fieldSelector"
-	limIt         = "limit"
+	metaData       = "metadata"
+	labeLs         = "labels"
+	labeLKey       = "labelKey"
+	labeLValue     = "labelValue"
+	labelSelector  = "labelSelector"
+	fieldSelector  = "fieldSelector"
+	limIt          = "limit"
+	deploymentName = "deploymentName"
+	repliCas       = "replicas"
+	deploymenT     = "deployment"
+	scalE          = "scale"
 )
