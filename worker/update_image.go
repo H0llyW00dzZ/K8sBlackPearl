@@ -76,3 +76,20 @@ func reportMaxRetriesFailure(results chan<- string, logger *zap.Logger, deployme
 	results <- failMessage
 	navigator.LogErrorWithEmojiRateLimited(constant.ErrorEmoji, failMessage)
 }
+
+func extractDeploymentParameters(parameters map[string]interface{}) (deploymentName, containerName, newImage string, err error) {
+	var ok bool
+	if deploymentName, ok = parameters[deploYmentName].(string); !ok {
+		err = fmt.Errorf(language.ErrorParameterDeploymentName)
+		return
+	}
+	if containerName, ok = parameters[contaInerName].(string); !ok {
+		err = fmt.Errorf(language.ErrorParameterContainerName)
+		return
+	}
+	if newImage, ok = parameters[newImAge].(string); !ok {
+		err = fmt.Errorf(language.ErrorParameterNewImage)
+		return
+	}
+	return
+}
