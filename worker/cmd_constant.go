@@ -29,3 +29,11 @@ const (
 	deploymenT     = "deployment"
 	scalE          = "scale"
 )
+
+// defined notice message just like human would type
+
+const (
+	notifyintializeNotInCluster = "You are not in cluster"
+	intializeoutOfCluster       = "Initialize out of cluster..."
+	readyTogo                   = "Ready to go into parallel..."
+)
