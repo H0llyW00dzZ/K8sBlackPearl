@@ -4,6 +4,8 @@ go 1.21.5
 
 require go.uber.org/zap v1.26.0
 
+require github.com/H0llyW00dzZ/ChatGPT-Next-Web-Session-Exporter v1.3.1 // indirect
+
 require (
 	github.com/H0llyW00dzZ/go-urlshortner v0.4.10
 	github.com/davecgh/go-spew v1.1.1 // indirect
