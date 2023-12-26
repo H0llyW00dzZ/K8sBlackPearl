@@ -15,7 +15,7 @@ import (
 
 const (
 	maxRetries = 3               // Maximum number of retries
-	retryDelay = 2 * time.Second // Delay between retries
+	retryDelay = 5 * time.Second // Delay between retries
 )
 
 // CrewWorker orchestrates the execution of tasks within a Kubernetes namespace by utilizing
