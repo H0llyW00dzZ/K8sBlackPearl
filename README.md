@@ -240,6 +240,34 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
   - Metrics should provide insights into the success rates of tasks, resource usage, processing times, and error rates.
   - Explore the possibility of leveraging existing monitoring tools that can be integrated with Kubernetes for streamlined metrics collection and visualization.
 
+## High-Level and Low-Level Operations
+
+In our Kubernetes task management system, we've designed a robust framework that intertwines high-level abstractions with low-level operations to provide a comprehensive solution for orchestrating and executing tasks within a Kubernetes environment.
+
+### High-Level Operations
+
+High-level operations in our system refer to the overarching functionalities and abstractions that simplify complex processes into manageable components. These operations serve as the backbone of our system, providing users with a user-friendly interface and abstracting away the intricacies of direct Kubernetes interactions.
+
+- **Task Abstraction**: We define tasks through the `Task` struct, which represents a unit of work with a unique name, type, and parameters, abstracting the details of the specific work to be done.
+- **Task Management Workflow**: Our `CaptainTellWorkers` function sets up a fleet of worker goroutines that operate concurrently, managing the lifecycle and execution flow of tasks in a distributed manner.
+- **Configuration Management**: The system allows for the configuration of tasks through JSON and YAML files, enabling users to define and modify task parameters easily.
+
+### Low-Level Operations
+
+Low-level operations are the nuts and bolts of our system. They handle the direct interaction with Kubernetes resources, managing the specific details of API requests, error handling, and resource manipulation.
+
+- **Direct Kubernetes API Interactions**: Functions like `labelSinglePodWithResourceVersion` and `ScaleDeployment` interact directly with Kubernetes resources, handling the specifics of creating, updating, and managing Kubernetes objects.
+- **Detailed Error Handling**: Our system includes comprehensive error handling and logging mechanisms, such as in `error_and.go`, ensuring that all potential issues are caught and appropriately managed.
+- **Retry Logic and Conflict Resolution**: The system implements retry logic in operations like `update_image.go`, which is crucial for dealing with transient errors and conflicts that can occur in a dynamic Kubernetes environment.
+
+### Integration of High-Level and Low-Level Operations
+
+Our system seamlessly integrates high-level and low-level operations to deliver a robust and efficient task management solution. By combining these two operational layers, we provide users with a powerful toolset that is both easy to use and capable of handling the complexities of Kubernetes resource management.
+
+- [x] **High-Level Abstractions**: The system's high-level abstractions empower users to define and manage tasks without needing to understand the underlying Kubernetes API complexities.
+- [x] **Low-Level Directives**: The low-level operations provide the necessary control and precision required for granular management of Kubernetes resources, ensuring that the system can handle a wide range of scenarios with reliability and accuracy.
+
+Our continued development efforts aim to enhance these operations further, ensuring that our system remains at the forefront of Kubernetes task management solutions.
 
 # How it work ?
 
