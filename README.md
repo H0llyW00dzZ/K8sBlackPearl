@@ -243,6 +243,9 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 
 # How it work ?
 
+> [!NOTE]  
+> This diagram is outdated. A newer version has not yet been updated.
+
 ```mermaid
 erDiagram
     CAPTAIN_GOPHER ||--|{ CREW : "assembles crew"
