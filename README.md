@@ -257,7 +257,7 @@ High-level operations in our system refer to the overarching functionalities and
 Low-level operations are the nuts and bolts of our system. They handle the direct interaction with Kubernetes resources, managing the specific details of API requests, error handling, and resource manipulation.
 
 - **Direct Kubernetes API Interactions**: Functions like `labelSinglePodWithResourceVersion` and `ScaleDeployment` interact directly with Kubernetes resources, handling the specifics of creating, updating, and managing Kubernetes objects.
-- **Detailed Error Handling**: Our system includes comprehensive error handling and logging mechanisms, such as in `error_and.go`, ensuring that all potential issues are caught and appropriately managed.
+- **Detailed Error Handling**: Our system includes comprehensive error handling and logging mechanisms, such as in `error_and_retry.go`, ensuring that all potential issues are caught and appropriately managed.
 - **Retry Logic and Conflict Resolution**: The system implements retry logic in operations like `update_image.go`, which is crucial for dealing with transient errors and conflicts that can occur in a dynamic Kubernetes environment.
 
 ### Integration of High-Level and Low-Level Operations
