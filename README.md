@@ -271,9 +271,6 @@ Our continued development efforts aim to enhance these operations further, ensur
 
 # How it work ?
 
-> [!NOTE]  
-> This diagram is outdated. A newer version has not yet been updated.
-
 ```mermaid
 erDiagram
     CAPTAIN_GOPHER ||--|{ CREW : "assembles crew"
@@ -314,4 +311,9 @@ erDiagram
     TASK-STATUS-MAP ||--|| CLAIM : "claims"
     TASK-STATUS-MAP ||--|| RELEASE : "relinquishes"
 
+    TASK-RUNNER ||--|| CREW-GET-PODS : "retrieves pods"
+    TASK-RUNNER ||--|| CREW-LABEL-PODS : "labels pods"
+    TASK-RUNNER ||--|| CREW-SCALE-DEPLOYMENTS : "scales deployments"
+    TASK-RUNNER ||--|| CREW-UPDATE-IMAGE-DEPLOYMENTS : "updates images"
+    TASK-RUNNER ||--|| CREW-MANAGE-DEPLOYMENTS : "manages deployments"
 ```
