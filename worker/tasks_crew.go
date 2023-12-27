@@ -311,12 +311,23 @@ func (c *CrewUpdateImageDeployments) Run(ctx context.Context, clientset *kuberne
 }
 
 // CrewCreatePVCStorage is an implementation of TaskRunner that creates a PersistentVolumeClaim.
+//
+// This struct is responsible for creating PVCs (PersistentVolumeClaims) in a Kubernetes cluster.
+// It extracts the necessary parameters from the task parameters, calls the createPVC function to create the PVC,
+// and handles logging and error handling during the process.
 type CrewCreatePVCStorage struct {
+	// shipsNamespace specifies the Kubernetes namespace where the PVC will be created.
 	shipsNamespace string
-	workerIndex    int
+
+	// workerIndex is an identifier for the worker that is executing the task.
+	// This can be used for logging and tracking the progress of the task across multiple workers.
+	workerIndex int
 }
 
 // Run creates a PersistentVolumeClaim in the specified namespace using the provided parameters.
+//
+// This method orchestrates the task execution by extracting the required parameters,
+// invoking the createPVC function to create the PVC, and handling any errors or logging messages.
 func (c *CrewCreatePVCStorage) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
 	// Define logging fields for structured logging
 	fields := navigator.CreateLogFields(
@@ -325,14 +336,14 @@ func (c *CrewCreatePVCStorage) Run(ctx context.Context, clientset *kubernetes.Cl
 		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
 	)
 
-	// Log the start of the update operation
+	// Log the start of the PVC creation operation
 	navigator.LogInfoWithEmoji(
 		language.PirateEmoji,
 		fmt.Sprintf(language.CreatePVCStorage, workerIndex),
 		fields...,
 	)
 
-	// Extract parameters for PVC creation
+	// Extract the necessary parameters from the task parameters
 	storageClassName, ok := parameters[storageClassName].(string)
 	if !ok {
 		return fmt.Errorf(language.ErrorParameterStorageClassName)
@@ -346,7 +357,7 @@ func (c *CrewCreatePVCStorage) Run(ctx context.Context, clientset *kubernetes.Cl
 		return fmt.Errorf(language.ErrorparameterstorageSize)
 	}
 
-	// Call the createPVC function with the extracted parameters
+	// Call the createPVC function with the extracted parameters to create the PVC
 	err := createPVC(ctx, clientset, shipsNamespace, storageClassName, pvcName, storageSize)
 	if err != nil {
 		// Log the error and return
