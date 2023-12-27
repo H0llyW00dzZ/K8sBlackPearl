@@ -310,6 +310,59 @@ func (c *CrewUpdateImageDeployments) Run(ctx context.Context, clientset *kuberne
 	return nil
 }
 
+// CrewCreatePVCStorage is an implementation of TaskRunner that creates a PersistentVolumeClaim.
+type CrewCreatePVCStorage struct {
+	shipsNamespace string
+	workerIndex    int
+}
+
+// Run creates a PersistentVolumeClaim in the specified namespace using the provided parameters.
+func (c *CrewCreatePVCStorage) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+	// Define logging fields for structured logging
+	fields := navigator.CreateLogFields(
+		language.TaskCreatePVC,
+		shipsNamespace,
+		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+	)
+
+	// Log the start of the update operation
+	navigator.LogInfoWithEmoji(
+		language.PirateEmoji,
+		fmt.Sprintf(language.CreatePVCStorage, workerIndex),
+		fields...,
+	)
+
+	// Extract parameters for PVC creation
+	storageClassName, ok := parameters[storageClassName].(string)
+	if !ok {
+		return fmt.Errorf(language.ErrorParameterStorageClassName)
+	}
+	pvcName, ok := parameters[pvcName].(string)
+	if !ok {
+		return fmt.Errorf(language.ErrorParameterpvcName)
+	}
+	storageSize, ok := parameters[storageSize].(string)
+	if !ok {
+		return fmt.Errorf(language.ErrorparameterstorageSize)
+	}
+
+	// Call the createPVC function with the extracted parameters
+	err := createPVC(ctx, clientset, shipsNamespace, storageClassName, pvcName, storageSize)
+	if err != nil {
+		// Log the error and return
+		errorFields := append(fields, zap.String(language.Error, err.Error()))
+		failedMessage := fmt.Sprintf(language.ErrorFailedToCreatePvc, pvcName, err)
+		navigator.LogErrorWithEmojiRateLimited(constant.ErrorEmoji, failedMessage, errorFields...)
+		return err
+	}
+
+	// Log the successful creation of the PVC
+	successMessage := fmt.Sprintf(language.WorkerSucessfullyCreatePVC, pvcName, shipsNamespace)
+	navigator.LogInfoWithEmoji(constant.SuccessEmoji, successMessage, fields...)
+
+	return nil
+}
+
 // getLatestVersionOfPod fetches the latest version of the Pod from the Kubernetes API.
 func getLatestVersionOfPod(ctx context.Context, clientset *kubernetes.Clientset, namespace string, podName string) (*corev1.Pod, error) {
 	// Fetch the latest version of the Pod using the clientset.
