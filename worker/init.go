@@ -29,4 +29,7 @@ func init() {
 	// Register the new TaskRunner for updating image deployments.
 	RegisterTaskRunner("CrewUpdateImageDeployments", func() TaskRunner { return &CrewUpdateImageDeployments{} })
 
+	// Register the new TaskRunner for create storage pvc
+	RegisterTaskRunner("CrewCreatePVCStorage", func() TaskRunner { return &CrewCreatePVCStorage{} })
+
 }
