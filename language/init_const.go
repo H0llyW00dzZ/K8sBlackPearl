@@ -39,6 +39,9 @@ const (
 	ErrorParameterReplicas                 = "parameter 'replicas' is required and must be an integer"
 	ErrorParameterNewImage                 = "parameter 'newImage' is required and must be a string"
 	ErrorParameterContainerName            = "parameter 'containerName' is required and must be a string"
+	ErrorParameterStorageClassName         = "parameter 'storageClassName' is required and must be a string"
+	ErrorParameterpvcName                  = "parameter 'pvcName' is required and must be a string"
+	ErrorparameterstorageSize              = "parameter 'storageSize' is required and must be a string"
 	ErrorConflict                          = "Conflict detected when scaling deployment '%s', resolving..."
 	FailedToScaleDeployment                = "Failed to scale deployment '%s' to '%d' after %d retries: %v"
 	FailedTOScallEdDeployment              = "Failed to scale deployment '%s' to '%d': %v"
@@ -49,6 +52,9 @@ const (
 	ErrorFailedToUpdateImage               = "Failed to update image for deployment %s: %v"
 	ErrorFailedToUpdateImageAfterRetries   = "Failed to update image for deployment %s after %d retries"
 	ErrorFailedToUpdateDeployImage         = "Failed to update deployment image"
+	ErrorCreatingPvc                       = "Error creating pvc: %w"
+	ErrorCreatingStorageClass              = "Error creating storage class: %w"
+	ErrorFailedToCreatePvc                 = "Failed to create PVC '%s': %v"
 )
 
 const (
@@ -86,9 +92,11 @@ const (
 	TaskManageDeployments     = "ManageDeployments"
 	TaskScaleDeployment       = "ScaleDeployment"
 	TaskUpdateDeploymentImage = "UpdateDeploymentImage"
+	TaskCreatePVC             = "CreatePVCStorage"
 	ScalingDeployment         = "Crew Worker %d: Scaling deployments"
 	ManagingDeployments       = "Crew Worker %d: Managing deployments"
 	UpdatingImage             = "Crew Worker %d: Updating deployment image"
+	CreatePVCStorage          = "Crew Worker %d: Creating PVC storage"
 )
 
 const (
@@ -108,6 +116,7 @@ const (
 	ImageSuccessfully            = "Image updated successfully for deployment %s to %s"
 	DeploymentImageUpdated       = "Deployment image updated successfully"
 	UpdatingDeploymentImage      = "Updating deployment image"
+	WorkerSucessfullyCreatePVC   = "Successfully created PVC '%s' in namespace '%s'"
 )
 
 const (

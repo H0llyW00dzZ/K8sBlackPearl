@@ -15,19 +15,22 @@ const (
 
 // defined object
 const (
-	metaData       = "metadata"
-	labeLs         = "labels"
-	labeLKey       = "labelKey"
-	labeLValue     = "labelValue"
-	labelSelector  = "labelSelector"
-	fieldSelector  = "fieldSelector"
-	limIt          = "limit"
-	deploYmentName = "deploymentName"
-	contaInerName  = "containerName"
-	newImAge       = "newImage"
-	repliCas       = "replicas"
-	deploymenT     = "deployment"
-	scalE          = "scale"
+	metaData         = "metadata"
+	labeLs           = "labels"
+	labeLKey         = "labelKey"
+	labeLValue       = "labelValue"
+	labelSelector    = "labelSelector"
+	fieldSelector    = "fieldSelector"
+	limIt            = "limit"
+	deploYmentName   = "deploymentName"
+	contaInerName    = "containerName"
+	newImAge         = "newImage"
+	repliCas         = "replicas"
+	deploymenT       = "deployment"
+	scalE            = "scale"
+	storageClassName = "storageClassName"
+	pvcName          = "pvcName"
+	storageSize      = "storageSize"
 )
 
 // defined notice message just like human would type
