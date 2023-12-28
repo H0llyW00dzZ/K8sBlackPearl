@@ -374,6 +374,59 @@ func (c *CrewCreatePVCStorage) Run(ctx context.Context, clientset *kubernetes.Cl
 	return nil
 }
 
+type CrewUpdateNetworkPolicy struct {
+	shipsNamespace string
+	workerIndex    int
+}
+
+func (c *CrewUpdateNetworkPolicy) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+	// Define logging fields for structured logging
+	fields := navigator.CreateLogFields(
+		language.TaskUpdateNetworkPolicy,
+		shipsNamespace,
+		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+	)
+
+	// Log the start of the update operation
+	navigator.LogInfoWithEmoji(
+		language.PirateEmoji,
+		fmt.Sprintf(language.UpdateNetworkPolicy, workerIndex),
+		fields...,
+	)
+
+	// Extract network policy parameters from the provided task parameters
+	policyName, policySpec, err := extractNetworkPolicyParameters(parameters)
+	if err != nil {
+		// Log the error and return if parameter extraction fails
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, err.Error(), fields...)
+		return err
+	}
+
+	// Create a channel to receive results from the update operation
+	results := make(chan string, 1)
+	defer close(results)
+
+	// Retrieve the logger instance
+	logger := zap.L()
+
+	// Update the network policy using the extracted parameters
+	err = UpdateNetworkPolicy(ctx, clientset, shipsNamespace, policyName, policySpec, results, logger)
+	if err != nil {
+		// Log the error and return if the update operation fails
+		errorFields := append(fields, zap.String(language.Error, err.Error()))
+		failedMessage := fmt.Sprintf("%v %s", constant.ErrorEmoji, language.ErrorFailedToUpdateNetworkPolicy)
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, failedMessage, errorFields...)
+		return err
+	}
+
+	// Process and log the results from the update operation
+	for updateResult := range results {
+		navigator.LogInfoWithEmoji(language.PirateEmoji, updateResult, fields...)
+	}
+
+	return nil
+}
+
 // getLatestVersionOfPod fetches the latest version of the Pod from the Kubernetes API.
 func getLatestVersionOfPod(ctx context.Context, clientset *kubernetes.Clientset, namespace string, podName string) (*corev1.Pod, error) {
 	// Fetch the latest version of the Pod using the clientset.
