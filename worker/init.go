@@ -32,4 +32,7 @@ func init() {
 	// Register the new TaskRunner for create storage pvc
 	RegisterTaskRunner("CrewCreatePVCStorage", func() TaskRunner { return &CrewCreatePVCStorage{} })
 
+	// Register the new TaskRunner for update network policy
+	RegisterTaskRunner("CrewUpdateNetworkPolicy", func() TaskRunner { return &CrewUpdateNetworkPolicy{} })
+
 }
