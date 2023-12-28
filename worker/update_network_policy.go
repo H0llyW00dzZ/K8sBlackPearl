@@ -2,12 +2,14 @@ package worker
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
+	"gopkg.in/yaml.v2"
 	networkingv1 "k8s.io/api/networking/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -51,26 +53,47 @@ func reportNetworkFailure(results chan<- string, logger *zap.Logger, policyName,
 	navigator.LogErrorWithEmojiRateLimited(constant.ErrorEmoji, errorMessage, zap.Error(err))
 }
 
-func extractNetworkPolicyParameters(parameters map[string]interface{}) (policyName string, policySpec networkingv1.NetworkPolicySpec, err error) {
-	var ok bool
+func extractPolicyName(parameters map[string]interface{}) (string, error) {
+	policyName, ok := parameters[policyNamE].(string)
+	if !ok || policyName == "" {
+		return "", fmt.Errorf(language.ErrorParameterPolicyName)
+	}
+	return policyName, nil
+}
 
-	// Extract policyName
-	if policyName, ok = parameters[policyNamE].(string); !ok || policyName == "" {
-		err = fmt.Errorf(language.ErrorParameterMissing, policyNamE)
-		return
+func unmarshalPolicySpec(policySpecData string) (networkingv1.NetworkPolicySpec, error) {
+	var policySpec networkingv1.NetworkPolicySpec
+
+	// Try to unmarshal as JSON
+	err := json.Unmarshal([]byte(policySpecData), &policySpec)
+	if err == nil {
+		return policySpec, nil
 	}
 
-	// Extract policySpec
-	policySpecInterface, ok := parameters[policySpeC]
+	// If JSON fails, try YAML
+	err = yaml.Unmarshal([]byte(policySpecData), &policySpec)
+	if err != nil {
+		return policySpec, fmt.Errorf(language.ErrorParaMetterPolicySpecJSONorYAML, err)
+	}
+
+	return policySpec, nil
+}
+
+func extractNetworkPolicyParameters(parameters map[string]interface{}) (string, networkingv1.NetworkPolicySpec, error) {
+	policyName, err := extractPolicyName(parameters)
+	if err != nil {
+		return "", networkingv1.NetworkPolicySpec{}, err
+	}
+
+	policySpecData, ok := parameters[policySpeC].(string)
 	if !ok {
-		err = fmt.Errorf(language.ErrorParameterMissing, policySpeC)
-		return
-	}
-	policySpec, ok = policySpecInterface.(networkingv1.NetworkPolicySpec)
-	if !ok {
-		err = fmt.Errorf(language.ErrorParameterInvalid, policySpeC)
-		return
+		return "", networkingv1.NetworkPolicySpec{}, fmt.Errorf(language.ErrorParameterPolicySpec)
 	}
 
-	return
+	policySpec, err := unmarshalPolicySpec(policySpecData)
+	if err != nil {
+		return "", networkingv1.NetworkPolicySpec{}, err
+	}
+
+	return policyName, policySpec, nil
 }
