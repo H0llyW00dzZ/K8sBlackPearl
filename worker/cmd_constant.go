@@ -31,6 +31,8 @@ const (
 	storageClassName = "storageClassName"
 	pvcName          = "pvcName"
 	storageSize      = "storageSize"
+	policyNamE       = "policyName"
+	policySpeC       = "policySpec"
 )
 
 // defined notice message just like human would type
