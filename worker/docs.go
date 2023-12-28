@@ -2,7 +2,7 @@
 // Kubernetes resources from within a cluster. It offers a convenient abstraction for
 // managing Kubernetes operations, focusing on pod health checks, pod labeling, structured logging,
 // scaling deployments, updating deployment images, creating PersistentVolumeClaims (PVCs),
-// and task configuration through YAML or JSON files.
+// updating network policies, and task configuration through YAML or JSON files.
 //
 // The package is intended for applications running as pods within Kubernetes clusters
 // and leverages in-cluster configuration to establish a clientset for API interactions.
@@ -36,6 +36,9 @@
 //     provisioning of storage resources within the cluster. The process is logged with
 //     emojis to indicate success or failure, improving the visibility of the operation's outcome.
 //
+//   - Network Policy updates can now be handled, allowing for the modification of network
+//     policies within the cluster to manage traffic flow between pods/services.
+//
 // # Functions
 //
 //   - NewKubernetesClient: Creates a new Kubernetes clientset configured for in-cluster
@@ -43,7 +46,7 @@
 //
 //   - CrewWorker: Orchestrates a worker process to perform tasks such as health checks,
 //     labeling of pods, scaling deployments, updating deployment images, creating PVCs,
-//     and other configurable tasks within a specified namespace.
+//     updating network policies, and other configurable tasks within a specified namespace.
 //     It includes retry logic to handle transient errors and respects cancellation and timeout contexts.
 //     Structured logging is used to provide detailed contextual information, now with emojis for better visual cues.
 //
@@ -73,13 +76,18 @@
 //     allowing for storage provisioning according to the parameters provided.
 //     The creation process is logged with success and error emojis for immediate feedback.
 //
+//   - CrewUpdateNetworkPolicy: Updates a Kubernetes NetworkPolicy based on the provided
+//     parameters, handling retries on conflicts and reporting the outcome through a results channel.
+//     It logs the update process with structured logging, including emojis for visual cues.
+//
 // Usage:
 //
 // Initialize the Kubernetes client using NewKubernetesClient, then leverage the client
 // to perform operations such as retrieving and processing pods within a namespace, scaling
-// deployments, updating deployment images, and creating PVCs as required. Contexts are used to manage the
-// lifecycle of the worker processes, including graceful shutdowns and cancellation. Task
-// configurations can be loaded from a YAML file for enhanced flexibility.
+// deployments, updating deployment images, creating PVCs, updating network policies, and
+// more as required. Contexts are used to manage the lifecycle of the worker processes,
+// including graceful shutdowns and cancellation. Task configurations can be loaded from
+// a YAML file for enhanced flexibility.
 //
 // Example:
 //
@@ -126,6 +134,9 @@
 //
 //   - The introduction of PVC creation allows for dynamic storage provisioning, complete with
 //     emoji-based logging for immediate operation feedback.
+//
+//   - Network Policy update functionality has been introduced, allowing for the management
+//     of network traffic policies within the cluster, with structured logging and retry mechanisms.
 //
 // # TODO
 //
