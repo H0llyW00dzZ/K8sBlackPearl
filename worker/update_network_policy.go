@@ -16,6 +16,22 @@ import (
 	"k8s.io/client-go/util/retry"
 )
 
+// UpdateNetworkPolicy updates a Kubernetes NetworkPolicy with the provided specification.
+// It performs the update operation with retries on conflict errors and reports the outcome
+// through a results channel. On success, a success message is sent to the results channel.
+// In case of errors other than conflicts or after exceeding the maximum number of retries,
+// a failure is reported.
+//
+// Parameters:
+//   - ctx: Context for cancellation and timeout.
+//   - clientset: A Kubernetes clientset for interacting with the Kubernetes API.
+//   - namespace: The Kubernetes namespace containing the NetworkPolicy.
+//   - policyName: The name of the NetworkPolicy to update.
+//   - policySpec: The new specification for the NetworkPolicy.
+//   - results: A channel to send operation results for logging.
+//   - logger: A logger for structured logging.
+//
+// Returns an error if the operation fails after retries or if a non-conflict error is encountered.
 func UpdateNetworkPolicy(ctx context.Context, clientset *kubernetes.Clientset, namespace, policyName string, policySpec networkingv1.NetworkPolicySpec, results chan<- string, logger *zap.Logger) error {
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		// Get the current NetworkPolicy
@@ -41,18 +57,28 @@ func UpdateNetworkPolicy(ctx context.Context, clientset *kubernetes.Clientset, n
 	})
 }
 
+// reportNetworkSuccess sends a success message to the results channel and logs the success.
+//
+// This unexported function is used internally by UpdateNetworkPolicy to report successful updates.
 func reportNetworkSuccess(results chan<- string, logger *zap.Logger, policyName, detail string) {
 	successMsg := fmt.Sprintf(language.WorkerPolicySuccessfullyUpdated, policyName, detail)
 	results <- successMsg
 	navigator.LogInfoWithEmoji(constant.SuccessEmoji, successMsg)
 }
 
+// reportNetworkFailure sends an error message to the results channel and logs the failure.
+//
+// This unexported function is used internally by UpdateNetworkPolicy to report failures.
 func reportNetworkFailure(results chan<- string, logger *zap.Logger, policyName, detail string, err error) {
 	errorMessage := fmt.Sprintf(language.ErrorFailedToUpdatePolicy, policyName, detail, err)
 	results <- errorMessage
 	navigator.LogErrorWithEmojiRateLimited(constant.ErrorEmoji, errorMessage, zap.Error(err))
 }
 
+// extractPolicyName extracts the 'policyName' from the provided parameters map.
+// It returns an error if the 'policyName' is missing or is not a string.
+//
+// This unexported function is used internally by extractNetworkPolicyParameters.
 func extractPolicyName(parameters map[string]interface{}) (string, error) {
 	policyName, ok := parameters[policyNamE].(string)
 	if !ok || policyName == "" {
@@ -61,6 +87,13 @@ func extractPolicyName(parameters map[string]interface{}) (string, error) {
 	return policyName, nil
 }
 
+// unmarshalPolicySpec attempts to unmarshal a string containing either JSON or YAML
+// into a networkingv1.NetworkPolicySpec struct.
+//
+// Parameters:
+//   - policySpecData: A string containing the NetworkPolicy specification in JSON or YAML format.
+//
+// Returns the unmarshaled NetworkPolicySpec and an error if unmarshaling fails.
 func unmarshalPolicySpec(policySpecData string) (networkingv1.NetworkPolicySpec, error) {
 	var policySpec networkingv1.NetworkPolicySpec
 
@@ -79,6 +112,10 @@ func unmarshalPolicySpec(policySpecData string) (networkingv1.NetworkPolicySpec,
 	return policySpec, nil
 }
 
+// extractNetworkPolicyParameters extracts and validates the 'policyName' and 'policySpec' from a map of parameters.
+// It returns an error if any of the parameters are missing or if the 'policySpec' is not in a valid format.
+//
+// This function is used by task runners that require updating NetworkPolicies.
 func extractNetworkPolicyParameters(parameters map[string]interface{}) (string, networkingv1.NetworkPolicySpec, error) {
 	policyName, err := extractPolicyName(parameters)
 	if err != nil {
