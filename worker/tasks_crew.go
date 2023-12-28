@@ -374,11 +374,20 @@ func (c *CrewCreatePVCStorage) Run(ctx context.Context, clientset *kubernetes.Cl
 	return nil
 }
 
+// CrewUpdateNetworkPolicy is a TaskRunner that updates a Kubernetes NetworkPolicy according to the provided parameters.
 type CrewUpdateNetworkPolicy struct {
+	// shipsNamespace specifies the Kubernetes namespace where the NetworkPolicy is located.
 	shipsNamespace string
-	workerIndex    int
+
+	// workerIndex is an identifier for the worker that is executing the update operation.
+	// This can be used for logging and tracking the progress of the update across multiple workers.
+	workerIndex int
 }
 
+// Run executes the update operation for a Kubernetes NetworkPolicy. It extracts the policy name and specification
+// from the task parameters, updates the policy using the UpdateNetworkPolicy function, and logs the process.
+// The method handles parameter extraction, the update operation, and error reporting. It uses a results channel
+// to report the outcome of the update operation.
 func (c *CrewUpdateNetworkPolicy) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
 	// Define logging fields for structured logging
 	fields := navigator.CreateLogFields(
