@@ -80,8 +80,11 @@ func reportNetworkFailure(results chan<- string, logger *zap.Logger, policyName,
 //
 // This unexported function is used internally by extractNetworkPolicyParameters.
 func extractPolicyName(parameters map[string]interface{}) (string, error) {
-	policyName, ok := parameters[policyNamE].(string)
-	if !ok || policyName == "" {
+	policyName, err := getParamAsString(parameters, policyNamE)
+	if err != nil {
+		return "", fmt.Errorf(language.ErrorParameterMustBeString, err)
+	}
+	if policyName == "" {
 		return "", fmt.Errorf(language.ErrorParameterPolicyName)
 	}
 	return policyName, nil
@@ -122,9 +125,9 @@ func extractNetworkPolicyParameters(parameters map[string]interface{}) (string, 
 		return "", networkingv1.NetworkPolicySpec{}, err
 	}
 
-	policySpecData, ok := parameters[policySpeC].(string)
-	if !ok {
-		return "", networkingv1.NetworkPolicySpec{}, fmt.Errorf(language.ErrorParameterPolicySpec)
+	policySpecData, err := getParamAsString(parameters, policySpeC)
+	if err != nil {
+		return "", networkingv1.NetworkPolicySpec{}, fmt.Errorf(language.ErrorParameterMustBeString, err)
 	}
 
 	policySpec, err := unmarshalPolicySpec(policySpecData)
