@@ -22,3 +22,8 @@ go.work
 
 # H0llyW00dzZ Debug
 debug.go
+
+# H0llyW00dzZ Config Testing
+test.json
+test.yaml
+test.yml
