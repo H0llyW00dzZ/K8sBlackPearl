@@ -44,6 +44,8 @@ const (
 	ErrorparameterstorageSize              = "parameter 'storageSize' is required and must be a string"
 	ErrorParameterMissing                  = "parameter '%s' is required"
 	ErrorParameterInvalid                  = "parameter '%s' is invalid"
+	ErrorParameterMustBeString             = "parameter '%s' must be a string"
+	ErrorParameterMustBeInteger            = "parameter '%s' must be an integer"
 	ErrorParameterPolicyName               = "parameter 'policyName' is required and must be a string"
 	ErrorParameterPolicySpec               = "parameter 'policySpec' is required and must be a string"
 	ErrorParaMetterPolicySpecJSONorYAML    = "parameter 'policySpec' contains invalid JSON or YAML: %v"
