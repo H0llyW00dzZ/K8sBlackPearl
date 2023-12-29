@@ -14,6 +14,11 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// InitializeTasks loads tasks from the specified configuration file.
+func InitializeTasks(filePath string) ([]configuration.Task, error) {
+	return configuration.LoadTasks(filePath)
+}
+
 // TaskRunner defines the interface for running tasks.
 // Implementations of TaskRunner should execute tasks based on the provided context,
 // Kubernetes clientset, namespace, and task parameters.

@@ -2,9 +2,19 @@ package configuration
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v2"
+)
+
+const (
+	dotJson                       = ".json"
+	dotYaml                       = ".yaml"
+	dotYml                        = ".yml"
+	errorUnsupportedFileExtension = "unsupported file extension: %s"
 )
 
 // Task represents a unit of work that is to be processed by the system.
@@ -44,8 +54,7 @@ func LoadTasksFromJSON(filePath string) ([]Task, error) {
 	return tasks, nil
 }
 
-// LoadTasksFromYAML performs a similar function to LoadTasksFromJSON but for YAML files.
-// It reads a YAML file from the provided file path, unmarshals it into a slice of Task structs,
+// LoadTasksFromYAML reads a YAML file from the provided file path, unmarshals it into a slice of Task structs,
 // and returns them. It handles file reading errors and YAML unmarshalling errors by returning an error.
 //
 // filePath is the path to the YAML file containing an array of task definitions.
@@ -65,4 +74,24 @@ func LoadTasksFromYAML(filePath string) ([]Task, error) {
 	}
 
 	return tasks, nil
+}
+
+// LoadTasks determines the file extension of the provided filePath and calls the appropriate
+// function to load tasks from either a JSON or YAML file. It supports .json, .yaml, and .yml
+// file extensions and returns an error if the file extension is unsupported.
+//
+// filePath is the path to the configuration file containing an array of task definitions.
+//
+// This function is a convenience wrapper that allows the application to load task configurations
+// without needing to specify the file format explicitly.
+func LoadTasks(filePath string) ([]Task, error) {
+	ext := strings.ToLower(filepath.Ext(filePath))
+	switch ext {
+	case dotJson:
+		return LoadTasksFromJSON(filePath)
+	case dotYaml, dotYml:
+		return LoadTasksFromYAML(filePath)
+	default:
+		return nil, fmt.Errorf(errorUnsupportedFileExtension, ext)
+	}
 }
