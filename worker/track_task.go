@@ -42,6 +42,8 @@ func NewTaskStatusMap() *TaskStatusMap {
 //
 // Parameters:
 //   - task: The task to add or update in the map.
+//
+// Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) AddTask(task configuration.Task) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -58,6 +60,8 @@ func (s *TaskStatusMap) AddTask(task configuration.Task) {
 // Returns:
 //   - configuration.Task: The retrieved task.
 //   - bool: A boolean indicating whether the task was found in the map.
+//
+// Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) GetTask(name string) (configuration.Task, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -71,6 +75,8 @@ func (s *TaskStatusMap) GetTask(name string) (configuration.Task, bool) {
 //
 // Parameters:
 //   - task: The task with updated information to be stored in the map.
+//
+// Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) UpdateTask(task configuration.Task) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -83,6 +89,8 @@ func (s *TaskStatusMap) UpdateTask(task configuration.Task) {
 //
 // Parameters:
 //   - name: The name of the task to remove.
+//
+// Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) DeleteTask(name string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -100,6 +108,8 @@ func (s *TaskStatusMap) DeleteTask(name string) {
 //
 // Returns:
 //   - bool: A boolean indicating whether the task was successfully claimed.
+//
+// Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) Claim(taskName string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -129,6 +139,8 @@ func (s *TaskStatusMap) Release(taskName string) {
 //
 // Returns:
 //   - []configuration.Task: A slice containing all tasks from the tasks map.
+//
+// Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) GetAllTasks() []configuration.Task {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -148,6 +160,8 @@ func (s *TaskStatusMap) GetAllTasks() []configuration.Task {
 //
 // Returns:
 //   - bool: A boolean indicating whether the task is currently claimed.
+//
+// Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) IsClaimed(taskName string) bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

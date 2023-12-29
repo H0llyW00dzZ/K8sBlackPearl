@@ -161,6 +161,8 @@ func resolveConflict(ctx context.Context, clientset *kubernetes.Clientset, ships
 // It sends a health status message for each pod to the results channel.
 // If the context is cancelled during the process, it logs the cancellation
 // and sends a corresponding message through the results channel.
+//
+// Note: this dead code is left here for future use.
 func CrewProcessPods(ctx context.Context, pods []corev1.Pod, results chan<- string) {
 	for _, pod := range pods {
 		select {
