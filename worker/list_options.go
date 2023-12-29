@@ -41,36 +41,3 @@ func getListOptions(params map[string]interface{}) (v1.ListOptions, error) {
 
 	return listOptions, nil
 }
-
-// getParamAsString retrieves a string value from a map based on a key.
-// It returns an error if the key is not present or the value is not a string.
-//
-// params - a map of parameters where the key is expected to be associated with a string value.
-// key - the key for which to retrieve the string value.
-//
-// Returns the string value and nil on success, or an empty string and an error on failure.
-func getParamAsString(params map[string]interface{}, key string) (string, error) {
-	value, ok := params[key].(string)
-	if !ok {
-		return "", fmt.Errorf(language.ErrorParameterMustBeString, key)
-	}
-	return value, nil
-}
-
-// getParamAsInt64 retrieves an integer value from a map based on a key.
-// It handles both int and float64 data types due to the way JSON and YAML unmarshal numbers.
-// It returns an error if the key is not present or the value is not a number.
-//
-// params - a map of parameters where the key is expected to be associated with an integer value.
-// key - the key for which to retrieve the integer value.
-//
-// Returns the int64 value and nil on success, or 0 and an error on failure.
-func getParamAsInt64(params map[string]interface{}, key string) (int64, error) {
-	if value, ok := params[key].(int); ok {
-		return int64(value), nil
-	}
-	if value, ok := params[key].(float64); ok {
-		return int64(value), nil
-	}
-	return 0, fmt.Errorf(language.ErrorParameterMustBeInteger, key)
-}
