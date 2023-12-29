@@ -115,17 +115,19 @@ func reportMaxRetriesFailure(results chan<- string, logger *zap.Logger, deployme
 //
 // This function is unexported and used internally by other functions within the package.
 func extractDeploymentParameters(parameters map[string]interface{}) (deploymentName, containerName, newImage string, err error) {
-	var ok bool
-	if deploymentName, ok = parameters[deploYmentName].(string); !ok {
-		err = fmt.Errorf(language.ErrorParameterDeploymentName)
+	deploymentName, err = getParamAsString(parameters, deploYmentName)
+	if err != nil {
+		err = fmt.Errorf(language.ErrorParameterMustBeString, err)
 		return
 	}
-	if containerName, ok = parameters[contaInerName].(string); !ok {
-		err = fmt.Errorf(language.ErrorParameterContainerName)
+	containerName, err = getParamAsString(parameters, contaInerName)
+	if err != nil {
+		err = fmt.Errorf(language.ErrorParameterMustBeString, err)
 		return
 	}
-	if newImage, ok = parameters[newImAge].(string); !ok {
-		err = fmt.Errorf(language.ErrorParameterNewImage)
+	newImage, err = getParamAsString(parameters, newImAge)
+	if err != nil {
+		err = fmt.Errorf(language.ErrorParameterMustBeString, err)
 		return
 	}
 	return
