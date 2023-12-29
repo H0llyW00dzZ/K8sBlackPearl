@@ -216,15 +216,14 @@ func labelSinglePod(ctx context.Context, clientset *kubernetes.Clientset, pod *c
 // not found in the input map, or if they are not of type string. This error can then be handled
 // by the caller to ensure the labeling operation does not proceed with invalid parameters.
 func extractLabelParameters(parameters map[string]interface{}) (labelKey string, labelValue string, err error) {
-	var ok bool
-	labelKey, ok = parameters[labeLKey].(string)
-	if !ok {
-		return "", "", fmt.Errorf(language.ErrorParamLabelKey)
+	labelKey, err = getParamAsString(parameters, labeLKey)
+	if err != nil {
+		return "", "", fmt.Errorf(language.ErrorParameterMustBeString, err)
 	}
 
-	labelValue, ok = parameters[labeLValue].(string)
-	if !ok {
-		return "", "", fmt.Errorf(language.ErrorParamLabelabelValue)
+	labelValue, err = getParamAsString(parameters, labeLValue)
+	if err != nil {
+		return "", "", fmt.Errorf(language.ErrorParameterMustBeString, err)
 	}
 
 	return labelKey, labelValue, nil
