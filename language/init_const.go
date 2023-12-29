@@ -45,6 +45,7 @@ const (
 	ErrorParameterMissing                  = "parameter '%s' is required"
 	ErrorParameterInvalid                  = "parameter '%s' is invalid"
 	ErrorParameterMustBeString             = "parameter '%s' must be a string"
+	ErrorParameterMustBestring             = "parameter '%s' must be a string: %v"
 	ErrorParameterMustBeInteger            = "parameter '%s' must be an integer"
 	ErrorParameterPolicyName               = "parameter 'policyName' is required and must be a string"
 	ErrorParameterPolicySpec               = "parameter 'policySpec' is required and must be a string"
