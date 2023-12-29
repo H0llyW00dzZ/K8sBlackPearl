@@ -27,9 +27,9 @@ var Logger *zap.Logger
 var mu sync.Mutex
 
 // tryLog attempts to log a message if the rate limiter allows it.
-func tryLog(logFunc func(string, ...zap.Field), emoji string, context string, fields ...zap.Field) {
+func tryLog(logFunc func(zapcore.Level, string, ...zap.Field), level zapcore.Level, message string, fields ...zap.Field) {
 	if logLimiter.Allow() {
-		logFunc(emoji+" "+context, fields...)
+		logFunc(level, message, fields...)
 	}
 }
 
@@ -50,12 +50,12 @@ func LogWithEmoji(level zapcore.Level, emoji string, context string, rateLimited
 		return
 	}
 
-	if rateLimited && !logLimiter.Allow() {
-		return
-	}
-
 	message := emoji + " " + context
-	logByLevel(level, message, fields...)
+	if rateLimited {
+		tryLog(logByLevel, level, message, fields...)
+	} else {
+		logByLevel(level, message, fields...)
+	}
 }
 
 // logByLevel logs the message by the appropriate level.
@@ -78,6 +78,8 @@ func logByLevel(level zapcore.Level, message string, fields ...zap.Field) {
 }
 
 // LogInfoWithEmojiRateLimited logs an informational message with rate limiting.
+//
+// Note: this dead code is left here for future use.
 func LogInfoWithEmojiRateLimited(emoji string, context string, fields ...zap.Field) {
 	LogWithEmoji(zapcore.InfoLevel, emoji, context, true, fields...)
 }
