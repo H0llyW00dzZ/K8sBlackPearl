@@ -215,16 +215,16 @@ func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Cl
 	)
 
 	// Assume parameters contain "deploymentName" and "replicas" for scaling
-	deploymentName, ok := parameters[deploYmentName].(string)
-	if !ok {
+	deploymentName, err := getParamAsString(parameters, deploYmentName)
+	if err != nil {
 		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
-		return fmt.Errorf(language.ErrorParameterDeploymentName)
+		return fmt.Errorf(language.ErrorParameterMustBeString, err)
 	}
 
-	replicas, ok := parameters[repliCas].(int)
-	if !ok {
+	replicas, err := getParamAsInt(parameters, repliCas)
+	if err != nil {
 		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
-		return fmt.Errorf(language.ErrorParameterReplicas)
+		return fmt.Errorf(language.ErrorParameterMustBeString, err)
 	}
 
 	// Create a channel for results and defer its closure
@@ -235,7 +235,7 @@ func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Cl
 	logger := zap.L()
 
 	// Call the function to scale the deployment
-	err := ScaleDeployment(ctx, clientset, shipsNamespace, deploymentName, replicas, results, logger)
+	err = ScaleDeployment(ctx, clientset, shipsNamespace, deploymentName, replicas, results, logger)
 	if err != nil {
 		// Log the error with the custom logging function
 		errorFields := append(fields, zap.String(language.Error, err.Error()))
