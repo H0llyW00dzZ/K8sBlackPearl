@@ -2,9 +2,19 @@ package configuration
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v2"
+)
+
+const (
+	dotJson                      = ".json"
+	dotYaml                      = ".yaml"
+	dotYml                       = ".yml"
+	errorUnsuppotedFileExtension = "unsupported file extension: %s"
 )
 
 // Task represents a unit of work that is to be processed by the system.
@@ -65,4 +75,16 @@ func LoadTasksFromYAML(filePath string) ([]Task, error) {
 	}
 
 	return tasks, nil
+}
+
+func LoadTasks(filePath string) ([]Task, error) {
+	ext := strings.ToLower(filepath.Ext(filePath))
+	switch ext {
+	case dotJson:
+		return LoadTasksFromJSON(filePath)
+	case dotYaml, dotYml:
+		return LoadTasksFromYAML(filePath)
+	default:
+		return nil, fmt.Errorf(errorUnsuppotedFileExtension, ext)
+	}
 }
