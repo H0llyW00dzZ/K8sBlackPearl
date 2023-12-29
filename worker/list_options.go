@@ -34,12 +34,14 @@ func getListOptions(params map[string]interface{}) (v1.ListOptions, error) {
 		return listOptions, fmt.Errorf(language.ErrorParamFieldSelector)
 	}
 	listOptions.FieldSelector = fieldSelector
-
-	limit, ok := params[limIt].(int)
-	if !ok {
+	// Check for both int and float64 types for 'limit'.
+	if limitValue, ok := params[limIt].(int); ok {
+		listOptions.Limit = int64(limitValue)
+	} else if limitValue, ok := params[limIt].(float64); ok {
+		listOptions.Limit = int64(limitValue)
+	} else {
 		return listOptions, fmt.Errorf(language.ErrorParamLimit)
 	}
-	listOptions.Limit = int64(limit)
 
 	return listOptions, nil
 }
