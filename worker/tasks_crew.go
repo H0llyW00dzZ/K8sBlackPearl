@@ -348,22 +348,22 @@ func (c *CrewCreatePVCStorage) Run(ctx context.Context, clientset *kubernetes.Cl
 		fields...,
 	)
 
-	// Extract the necessary parameters from the task parameters
-	storageClassName, ok := parameters[storageClassName].(string)
-	if !ok {
+	// Extract the necessary parameters from the task parameters using getParamAsString
+	storageClassName, err := getParamAsString(parameters, storageClassName)
+	if err != nil {
 		return fmt.Errorf(language.ErrorParameterStorageClassName)
 	}
-	pvcName, ok := parameters[pvcName].(string)
-	if !ok {
+	pvcName, err := getParamAsString(parameters, pvcName)
+	if err != nil {
 		return fmt.Errorf(language.ErrorParameterpvcName)
 	}
-	storageSize, ok := parameters[storageSize].(string)
-	if !ok {
+	storageSize, err := getParamAsString(parameters, storageSize)
+	if err != nil {
 		return fmt.Errorf(language.ErrorparameterstorageSize)
 	}
 
 	// Call the createPVC function with the extracted parameters to create the PVC
-	err := createPVC(ctx, clientset, shipsNamespace, storageClassName, pvcName, storageSize)
+	err = createPVC(ctx, clientset, shipsNamespace, storageClassName, pvcName, storageSize)
 	if err != nil {
 		// Log the error and return
 		errorFields := append(fields, zap.String(language.Error, err.Error()))
