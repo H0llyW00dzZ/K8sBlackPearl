@@ -27,6 +27,7 @@ import (
 func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []configuration.Task, workerCount int) (<-chan string, func()) {
 	results := make(chan string)
 	var wg sync.WaitGroup
+	var once sync.Once               // Use sync.Once to ensure shutdown is only called once
 	taskStatus := NewTaskStatusMap() // Tracks the claiming of tasks to avoid duplication.
 
 	shutdownCtx, cancelFunc := context.WithCancel(ctx) // Derived context to signal shutdown.
@@ -42,13 +43,15 @@ func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, sh
 
 	// shutdown is called to initiate a graceful shutdown of all workers.
 	shutdown := func() {
-		cancelFunc() // Signal workers to stop by cancelling the context.
+		once.Do(func() { // Ensure this block only runs once
+			cancelFunc() // Signal workers to stop by cancelling the context.
 
-		// Ensure channel closure happens after all workers have finished.
-		go func() {
-			wg.Wait()      // Wait for all workers to complete.
-			close(results) // Close the results channel safely.
-		}()
+			// Ensure channel closure happens after all workers have finished.
+			go func() {
+				wg.Wait()      // Wait for all workers to complete.
+				close(results) // Close the results channel safely.
+			}()
+		})
 	}
 
 	return results, shutdown
