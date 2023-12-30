@@ -7,36 +7,23 @@
 // It includes methods such as LoadTasksFromJSON and LoadTasksFromYAML to facilitate the
 // reading and parsing of configuration files.
 //
-// A package-level ValidateTask function is exposed to ensure that task configurations
-// adhere to expected schemas and constraints. This function should be used to validate
-// tasks after loading them to prevent runtime errors due to misconfiguration.
-//
-// The package also includes helper functions like ConvertToTaskSlice which assists in
-// converting generic interface{} types (which may be the result of unstructured parsing)
-// into a slice of Task structs.
+// The LoadTasks function is exposed to load tasks from a file whose extension determines
+// the format of the tasks to be loaded (either JSON or YAML). This function abstracts away
+// the specific parsing logic and provides a simple interface for loading tasks.
 //
 // # Usage
 //
-// The LoadTasksFromJSON and LoadTasksFromYAML functions should be used to load task
-// configurations at the start of the application. The ValidateTask function can be
-// used to ensure the validity of the loaded tasks.
+// The LoadTasks function should be used to load task configurations at the start of the application.
 //
 // Example:
 //
-//	// Loading tasks from a JSON configuration file
-//	tasks, err := configuration.LoadTasksFromJSON("tasks.json")
+//	// Loading tasks from a configuration file (JSON or YAML)
+//	tasks, err := configuration.LoadTasks("tasks.json") // .json or .yaml file
 //	if err != nil {
 //	    // Handle error
 //	}
 //
-//	// Validate loaded tasks
-//	for _, task := range tasks {
-//	    if err := configuration.ValidateTask(task); err != nil {
-//	        // Handle validation error
-//	    }
-//	}
-//
-//	// Application logic using the validated tasks
+//	// Application logic using the loaded tasks
 //	for _, task := range tasks {
 //	    fmt.Printf("Task: %+v\n", task)
 //	}
