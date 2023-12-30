@@ -132,50 +132,83 @@ In real-world applications, the complexity and cost can escalate quickly. `K8sBl
 #### Example:
 
 ```go
+package main
 
-	// Define the number of workers.
-	workerCount := 1337 // Number of workers you want to start
+import (
+	"context"
+	"fmt"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
-	// Define the tasks to be processed by the workers.
-	tasks := []worker.Task{
-		{
-			Name: "check pods running 1",
-			ShipNamespace: "BlackPearl", // this your namespace
-			Type: "CrewGetPodsTaskRunner",
-			Parameters: map[string]interface{}{
-				"labelSelector": "app=nginx",
-				"fieldSelector": "status.phase=Running",
-				"limit":         10,
-			},
-		},
-    		{
-			Name: "check pods running 2",
-			ShipNamespace: "BlackPearl", // this your namespace
-			Type: "CrewGetPodsTaskRunner",
-			Parameters: map[string]interface{}{
-				"labelSelector": "app=nginx",
-				"fieldSelector": "status.phase=Running",
-				"limit":         10,
-			},
-		},
-    		{
-			Name: "check pods running 3",
-			ShipNamespace: "BlackPearl", // this your namespace
-			Type: "CrewGetPodsTaskRunner",
-			Parameters: map[string]interface{}{
-				"labelSelector": "app=nginx",
-				"fieldSelector": "status.phase=Running",
-				"limit":         10,
-			},
-		},
+	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
+	"github.com/H0llyW00dzZ/K8sBlackPearl/worker"
+	"go.uber.org/zap"
+)
+
+func main() {
+	filePath := "test.json" // Replace with the actual path to your task configuration file
+	// Initialize the logger.
+	logger, err := zap.NewDevelopment() // Use NewProduction for a sensible default
+	if err != nil {
+		fmt.Printf("Failed to initialize logger: %v\n", err)
+		os.Exit(1)
+	}
+	defer logger.Sync() // Flushes buffer, if any
+
+	sugar := logger.Sugar()
+
+	// Assuming navigator has a SetLogger function to initialize the logger.
+	navigator.SetLogger(logger)
+
+	// Set up a context that we can cancel in order to shut down the processes gracefully.
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Handle SIGINT and SIGTERM for graceful shutdown.
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	// Initialize Kubernetes client.
+	clientset, err := worker.NewKubernetesClient()
+	if err != nil {
+		sugar.Errorf("Failed to create Kubernetes client: %v", err)
+		os.Exit(1)
 	}
 
-  // Assuming that all tasks have the same namespace and you want to use the first task's namespace.
-	// If tasks can have different namespaces, you would need to handle that accordingly.
-	shipsNamespace := tasks[0].ShipsNamespace
+	// Define the namespace and number of workers.
+	shipsNamespace := "default" // Replace with your namespace
+	workerCount := 1            // Number of workers you want to start
+
+	tasks, err := worker.InitializeTasks(filePath)
+	if err != nil {
+		sugar.Fatalf("Failed to initialize tasks: %v", err)
+	}
 
 	// Start workers.
+	var wg sync.WaitGroup
+	wg.Add(1)
 	results, shutdown := worker.CaptainTellWorkers(ctx, clientset, shipsNamespace, tasks, workerCount)
+
+	go func() {
+		defer wg.Done()
+		for result := range results {
+			sugar.Infof("Received result: %v", result)
+		}
+	}()
+
+	// Wait for interrupt signal for graceful shutdown.
+	<-signals
+	sugar.Info("Shutdown signal received")
+
+	// Call the shutdown function to stop all workers.
+	shutdown()
+
+	// Wait for all goroutines to finish.
+	wg.Wait()
+	sugar.Info("All workers have been shut down. Exiting.")
+}
 
 ```
 > [!WARNING]
