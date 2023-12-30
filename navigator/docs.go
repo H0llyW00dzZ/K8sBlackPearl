@@ -1,26 +1,23 @@
-// Package navigator provides structured logging capabilities for the K8sBlackPearl project,
-// leveraging the uber-go/zap library. It offers leveled logging with the option to prefix
-// messages with emojis for enhanced visual distinction.
+// Package navigator provides structured logging capabilities tailored for the K8sBlackPearl project,
+// utilizing the uber-go/zap library for high-performance, leveled logging. This package enhances
+// log messages with emojis for visual distinction and supports structured logging with zap.Field parameters.
 //
-// A package-level Logger variable is available and protected by a mutex to ensure safe
-// concurrent access. This Logger should be initialized and set using SetLogger prior to
-// invoking any logging functions. Failing to set the Logger will result in error messages
-// being printed to standard output instead of proper log entries.
+// A package-level Logger variable is available, which should be set using SetLogger before any logging
+// functions are called. If the Logger is not set, logging functions will default to printing error messages
+// to standard output to prevent the application from panicking due to a nil Logger.
 //
-// Logging functions such as LogInfoWithEmoji and LogErrorWithEmoji are available for
-// recording informational and error messages, respectively. These functions enhance log
-// messages with emojis and a context string for quick identification. They also support
-// structured logging by accepting a variable number of zap.Field parameters.
+// Functions such as LogInfoWithEmoji and LogErrorWithEmoji are provided for logging informational and error
+// messages, respectively. These functions append emojis to the log messages for easier visual scanning in log
+// output. They also accept a variable number of zap.Field parameters for structured context logging.
 //
-// Helper function CreateLogFields is provided to generate a slice of zap.Field from
-// specified strings, facilitating the inclusion of consistent structured context within
-// logs throughout the application.
+// The CreateLogFields helper function is available to generate a slice of zap.Field from specified strings,
+// enabling consistent structured context in logs throughout the application.
 //
 // # Usage
 //
-// The Logger must be initialized and set using SetLogger before any logging activity.
-// Subsequently, LogInfoWithEmoji and LogErrorWithEmoji can be employed for logging
-// messages with structured context.
+// Before logging, the Logger must be initialized and set using SetLogger. After setting up, the logging
+// functions such as LogInfoWithEmoji and LogErrorWithEmoji can be used for logging messages with structured
+// context.
 //
 // Example:
 //
@@ -28,7 +25,7 @@
 //	logger, _ := zap.NewProduction()
 //	navigator.SetLogger(logger)
 //
-//	// Logging with the package functions
+//	// Logging with package functions
 //	navigator.LogInfoWithEmoji("🚀", "Application started")
 //	navigator.LogErrorWithEmoji("❗️", "An error occurred", zap.Error(err))
 //
