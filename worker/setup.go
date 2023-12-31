@@ -16,8 +16,9 @@ import (
 // or the kubeconfig file, depending on the environment.
 //
 // Returns:
-//   - A pointer to a kubernetes.Clientset ready for Kubernetes API interactions.
-//   - An error if the configuration fails or the client cannot be created.
+//
+//	*kubernetes.Clientset: A pointer to a Kubernetes Clientset ready for API interactions.
+//	error: An error if the configuration fails or the client cannot be created.
 func NewKubernetesClient() (*kubernetes.Clientset, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -41,8 +42,9 @@ func NewKubernetesClient() (*kubernetes.Clientset, error) {
 // buildOutOfClusterConfig attempts to build a configuration from the kubeconfig file.
 //
 // Returns:
-//   - A configuration object for the Kubernetes client.
-//   - An error if the kubeconfig file cannot be found or is invalid.
+//
+//	*rest.Config: A configuration object for the Kubernetes client.
+//	error: An error if the kubeconfig file cannot be found or is invalid.
 func buildOutOfClusterConfig() (*rest.Config, error) {
 	homeDir, found := os.LookupEnv(homeEnvVar)
 	if !found {
