@@ -1,11 +1,14 @@
 package worker
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/worker/configuration"
+	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
 )
 
@@ -92,7 +95,9 @@ func getParamAsInt(params map[string]interface{}, key string) (int, error) {
 //	message string: The message to log, which should describe the task being started.
 //	fields []zap.Field: A slice of zap.Field items that provide additional context for the log entry.
 func logTaskStart(message string, fields []zap.Field) {
-	navigator.LogInfoWithEmoji(language.PirateEmoji, message, fields...)
+	// Combine emojis with a space for readability.
+	emojiField := fmt.Sprintf("%s %s", language.CompassEmoji, language.PirateEmoji)
+	navigator.LogInfoWithEmoji(emojiField, message, fields...)
 }
 
 // createLogFieldsForRunnerTask generates a slice of zap.Field items for structured logging.
@@ -117,7 +122,9 @@ func createLogFieldsForRunnerTask(task configuration.Task, shipsNamespace string
 //	err error: The error to log.
 //	fields []zap.Field: A slice of zap.Field items that provide additional context for the error log entry.
 func logErrorWithFields(err error, fields []zap.Field) {
-	navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, err.Error(), fields...)
+	// Combine emojis with a space for readability.
+	emojiField := fmt.Sprintf("%s %s", constant.ErrorEmoji, language.PirateEmoji)
+	navigator.LogErrorWithEmojiRateLimited(emojiField, err.Error(), fields...)
 }
 
 // logResultsFromChannel logs messages received from a channel.
@@ -128,5 +135,40 @@ func logErrorWithFields(err error, fields []zap.Field) {
 func logResultsFromChannel(results chan string, fields []zap.Field) {
 	for result := range results {
 		navigator.LogInfoWithEmoji(language.PirateEmoji, result, fields...)
+	}
+}
+
+func withRetries(ctx context.Context, maxRetries int, retryDelay time.Duration, operation func() (string, error)) error {
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		taskName, err := attemptOperation(ctx, attempt, operation)
+		if err == nil {
+			return nil // The operation was successful, return nil error.
+		}
+		if ctx.Err() != nil {
+			return ctx.Err() // The context has been cancelled, return the context error.
+		}
+		logRetryAttempt(taskName, attempt, err, maxRetries)
+		if attempt < maxRetries-1 && !waitForNextAttempt(ctx, retryDelay) {
+			// Only wait for the next attempt if we have more retries left and context is not done.
+			return ctx.Err() // Context was cancelled during wait, return the context error.
+		}
+	}
+	return fmt.Errorf(language.ErrorSailingShips, maxRetries)
+}
+
+func attemptOperation(ctx context.Context, attempt int, operation func() (string, error)) (string, error) {
+	taskName, err := operation()
+	if err != nil {
+		return taskName, fmt.Errorf(language.ErrorAttemptFailed, attempt, err)
+	}
+	return taskName, nil
+}
+
+func waitForNextAttempt(ctx context.Context, retryDelay time.Duration) bool {
+	select {
+	case <-ctx.Done():
+		return false
+	case <-time.After(retryDelay):
+		return true
 	}
 }
