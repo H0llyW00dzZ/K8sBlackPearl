@@ -53,7 +53,7 @@ const (
 	ErrorParaMetterPolicySpecJSONorYAML    = "parameter 'policySpec' contains invalid JSON or YAML: %v"
 	ErrorConflict                          = "Conflict detected when scaling deployment '%s', resolving..."
 	FailedToScaleDeployment                = "Failed to scale deployment '%s' to '%d' after %d retries: %v"
-	FailedTOScallEdDeployment              = "Failed to scale deployment '%s' to '%d': %v"
+	FailedTOScallEdDeployment              = "Failed to scale deployment '%s' to '%d' Reason: %v"
 	FailedToGetDeployment                  = "Failed to get deployment '%s': %v"
 	ErrorFailedtoScalingDeployment         = "Failed to scale deployment"
 	ErrorConflictUpdateImage               = "Conflict encountered while updating deployment image for deployment %s Retrying..."
@@ -160,8 +160,9 @@ const (
 )
 
 const (
-	PirateEmoji = "🏴‍☠️ "
-	SwordEmoji  = "⚔️ "
+	PirateEmoji  = "🏴‍☠️ "
+	SwordEmoji   = "⚔️ "
+	CompassEmoji = "🧭 "
 )
 
 const (
