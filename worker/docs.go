@@ -9,6 +9,11 @@
 //
 // Enhancements in the latest version:
 //
+//   - Retry policies have been introduced to provide a robust mechanism for handling
+//     transient failures when performing Kubernetes operations. The RetryPolicy struct
+//     allows for configuring the maximum number of retries and the delay between attempts,
+//     ensuring that temporary issues can be overcome without manual intervention.
+//
 //   - Structured logging has been integrated throughout the package, providing clear
 //     and consistent logging messages that are easier to read and debug. Logging now
 //     includes emojis for quick visual parsing and additional context such as task names
