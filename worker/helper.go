@@ -4,6 +4,9 @@ import (
 	"fmt"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
+	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
+	"github.com/H0llyW00dzZ/K8sBlackPearl/worker/configuration"
+	"go.uber.org/zap"
 )
 
 // getParamAsString retrieves a string value from a map based on a key.
@@ -78,5 +81,54 @@ func getParamAsInt(params map[string]interface{}, key string) (int, error) {
 		return v, nil
 	default:
 		return 0, fmt.Errorf(language.ErrorParameterMustBeInteger, key)
+	}
+}
+
+// logTaskStart logs the start of a task runner with a custom message and additional fields.
+// message - the message to log, which should describe the task being started.
+// fields - a slice of zap.Field items that provide additional context for the log entry.
+func logTaskStart(message string, fields []zap.Field) {
+	navigator.LogInfoWithEmoji(language.PirateEmoji, message, fields...)
+}
+
+func extractTaskParams(task configuration.Task, requiredParams ...string) (map[string]interface{}, error) {
+	params := make(map[string]interface{})
+	var err error
+
+	for _, paramName := range requiredParams {
+		switch paramName {
+		case deploYmentName, contaInerName, newImAge, storageClassName, pvcName, policyNamE:
+			params[paramName], err = getParamAsString(task.Parameters, paramName)
+		case repliCas, limIt:
+			params[paramName], err = getParamAsInt(task.Parameters, paramName)
+		case retryDelay:
+			params[paramName], err = configuration.ParseDuration(task.RetryDelay)
+		default:
+			err = fmt.Errorf(language.ErrorParameterInvalid, paramName)
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf(language.ErrorFailedtoExtractParameter, paramName, err)
+		}
+	}
+
+	return params, nil
+}
+
+func createLogFieldsForRunnerTask(task configuration.Task, shipsNamespace string, taskType string) []zap.Field {
+	return navigator.CreateLogFields(
+		taskType,
+		shipsNamespace,
+		navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
+	)
+}
+
+func logErrorWithFields(err error, fields []zap.Field) {
+	navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, err.Error(), fields...)
+}
+
+func logResultsFromChannel(results chan string, fields []zap.Field) {
+	for result := range results {
+		navigator.LogInfoWithEmoji(language.PirateEmoji, result, fields...)
 	}
 }
