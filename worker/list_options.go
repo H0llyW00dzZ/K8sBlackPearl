@@ -11,7 +11,7 @@ import (
 // It extracts 'labelSelector', 'fieldSelector', and 'limit' from the map.
 // This function is designed to parse and validate the parameters required for listing Kubernetes resources.
 //
-// params - a map containing the keys and values for constructing the ListOptions.
+//	params map[string]interface{}: a map containing the keys and values for constructing the ListOptions.
 //
 //	Expected keys are 'labelSelector', 'fieldSelector', and 'limit'.
 //
