@@ -24,7 +24,7 @@ const (
 	InvalidParameters                      = "invalid parameters"
 	InvalidparametersL                     = "invalid parameters: labelSelector, fieldSelector, or limit"
 	ErrorPodsCancelled                     = "Pod processing was cancelled."
-	ErrorPailedtoListPods                  = "Failed to list pods: %w"
+	ErrorFailedtoListPods                  = "Failed to list pods: %w"
 	ErrorParamLabelSelector                = "parameter 'labelSelector' is required and must be a string"
 	ErrorParamFieldSelector                = "parameter 'fieldSelector' is required and must be a string"
 	ErrorParamLimit                        = "parameter 'limit' is required and must be an integer"
@@ -53,7 +53,7 @@ const (
 	ErrorParaMetterPolicySpecJSONorYAML    = "parameter 'policySpec' contains invalid JSON or YAML: %v"
 	ErrorConflict                          = "Conflict detected when scaling deployment '%s', resolving..."
 	FailedToScaleDeployment                = "Failed to scale deployment '%s' to '%d' after %d retries: %v"
-	FailedTOScallEdDeployment              = "Failed to scale deployment '%s' to '%d': %v"
+	FailedTOScallEdDeployment              = "Failed to scale deployment '%s' to '%d' Reason: %v"
 	FailedToGetDeployment                  = "Failed to get deployment '%s': %v"
 	ErrorFailedtoScalingDeployment         = "Failed to scale deployment"
 	ErrorConflictUpdateImage               = "Conflict encountered while updating deployment image for deployment %s Retrying..."
@@ -73,6 +73,9 @@ const (
 	ErrorFailedToParseDurationFromTask     = "failed to parse duration from task %s: %w"
 	ErrorDurationstringisEmpty             = "duration string is empty"
 	ErrorFailedtoExtractParameter          = "failed to extract parameter '%s': %w"
+	ErrorSailingShips                      = "sailing ships failed after %d attempts"
+	ErrorAttemptFailed                     = "attempt %d failed: %w"
+	ErrorTaskFailedAfterAttempts           = "task %s failed after %d attempts: %w"
 )
 
 const (
@@ -160,8 +163,9 @@ const (
 )
 
 const (
-	PirateEmoji = "🏴‍☠️ "
-	SwordEmoji  = "⚔️ "
+	PirateEmoji  = "🏴‍☠️ "
+	SwordEmoji   = "⚔️ "
+	CompassEmoji = "🧭 "
 )
 
 const (

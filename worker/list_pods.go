@@ -28,8 +28,8 @@ import (
 //	error: An error if the call to the Kubernetes API fails, otherwise nil.
 func listPods(ctx context.Context, clientset *kubernetes.Clientset, namespace string, listOptions v1.ListOptions) (*corev1.PodList, error) {
 	pods, err := clientset.CoreV1().Pods(namespace).List(ctx, listOptions)
-	if err != nil {
-		return nil, fmt.Errorf(language.ErrorPailedtoListPods, err)
+	if err != nil { // This is a more idiomatic way of handling errors
+		return nil, fmt.Errorf("%w: %s", err, language.ErrorFailedtoListPods)
 	}
 	return pods, nil
 }

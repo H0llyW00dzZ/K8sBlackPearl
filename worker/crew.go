@@ -54,7 +54,7 @@ func processTask(ctx context.Context, clientset *kubernetes.Clientset, shipsName
 		return
 	}
 
-	err := performTaskWithRetries(ctx, clientset, shipsNamespace, task, results, workerIndex)
+	err := performTaskWithRetries(ctx, clientset, shipsNamespace, task, results, workerIndex, taskStatus)
 	if err != nil {
 		handleFailedTask(task, taskStatus, shipsNamespace, err, results, workerIndex)
 	} else {
@@ -105,23 +105,29 @@ func handleSuccessfulTask(task configuration.Task, results chan<- string, worker
 //	task configuration.Task: Task to be executed.
 //	results chan<- string: Channel for reporting task execution results.
 //	workerIndex int: Index of the worker for contextual logging.
+//	taskStatus *TaskStatusMap: Map to track and control the status of tasks.
 //
 // Returns:
 //
 //	error: Error if the task fails after all retry attempts.
-func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, results chan<- string, workerIndex int) error {
-	for attempt := 0; attempt < task.MaxRetries; attempt++ {
+func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, results chan<- string, workerIndex int, taskStatus *TaskStatusMap) error {
+	operation := func() (string, error) {
+		// Attempt to perform the task.
 		err := performTask(ctx, clientset, shipsNamespace, task, workerIndex)
-		if err != nil {
-			if !handleTaskError(ctx, clientset, shipsNamespace, err, attempt, &task, workerIndex, task.MaxRetries, task.RetryDelayDuration) {
-				return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, task.MaxRetries)
-			}
-		} else {
-			results <- fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.TaskCompleteS, task.Name))
-			return nil
-		}
+		return task.Name, err // Return the task name along with the error.
 	}
-	return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, task.MaxRetries)
+
+	// Use the withRetries helper function to perform the operation with retries.
+	err := withRetries(ctx, task.MaxRetries, task.RetryDelayDuration, operation)
+	if err != nil {
+		// If the operation failed after retries, handle the failure.
+		handleFailedTask(task, taskStatus, shipsNamespace, err, results, workerIndex)
+		return fmt.Errorf(language.ErrorTaskFailedAfterAttempts, task.Name, task.MaxRetries, err)
+	}
+
+	// If the operation was successful, handle the success.
+	handleSuccessfulTask(task, results, workerIndex)
+	return nil
 }
 
 // resolveConflict attempts to resolve a conflict error by retrieving the latest version of a pod involved in the task.
