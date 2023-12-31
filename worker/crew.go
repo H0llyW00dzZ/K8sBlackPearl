@@ -3,7 +3,6 @@ package worker
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
@@ -11,11 +10,6 @@ import (
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-)
-
-const (
-	maxRetries = 3               // Maximum number of retries
-	retryDelay = 5 * time.Second // Delay between retries
 )
 
 // CrewWorker orchestrates the execution of tasks within a Kubernetes namespace by utilizing
@@ -81,7 +75,7 @@ func processTask(ctx context.Context, clientset *kubernetes.Clientset, shipsName
 //	workerIndex: Identifier for the worker instance for logging.
 func handleFailedTask(task configuration.Task, taskStatus *TaskStatusMap, shipsNamespace string, err error, results chan<- string, workerIndex int) {
 	taskStatus.Release(task.Name)
-	logFinalError(shipsNamespace, task.Name, err, maxRetries)
+	logFinalError(shipsNamespace, task.Name, err, task.MaxRetries)
 	results <- err.Error()
 }
 
@@ -114,18 +108,18 @@ func handleSuccessfulTask(task configuration.Task, results chan<- string, worker
 // Returns:
 //   - error: Error if the task fails after all retry attempts.
 func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, results chan<- string, workerIndex int) error {
-	for attempt := 0; attempt < maxRetries; attempt++ {
+	for attempt := 0; attempt < task.MaxRetries; attempt++ {
 		err := performTask(ctx, clientset, shipsNamespace, task, workerIndex)
 		if err != nil {
-			if !handleTaskError(ctx, clientset, shipsNamespace, err, attempt, &task, workerIndex, maxRetries, retryDelay) {
-				return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, maxRetries)
+			if !handleTaskError(ctx, clientset, shipsNamespace, err, attempt, &task, workerIndex, task.MaxRetries, task.RetryDelayDuration) {
+				return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, task.MaxRetries)
 			}
 		} else {
 			results <- fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.TaskCompleteS, task.Name))
 			return nil
 		}
 	}
-	return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, maxRetries)
+	return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, task.MaxRetries)
 }
 
 // resolveConflict attempts to resolve a conflict error by retrieving the latest version of a pod involved in the task.
