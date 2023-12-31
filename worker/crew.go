@@ -41,14 +41,14 @@ func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNames
 //
 // Parameters:
 //
-//	ctx: Context for cancellation and timeout of the task processing.
-//	clientset: Kubernetes API client for cluster interactions.
-//	shipsNamespace: Namespace in Kubernetes where the task is executed.
-//	task: The task to be processed.
-//	results: Channel to return execution results to the caller.
-//	logger: Logger for structured logging within the worker.
-//	taskStatus: Map to track and control the status of tasks.
-//	workerIndex: Identifier for the worker instance for logging.
+//	ctx context.Context: Context for cancellation and timeout of the task processing.
+//	clientset *kubernetes.Clientset: Kubernetes API client for cluster interactions.
+//	shipsNamespace string: Namespace in Kubernetes where the task is executed.
+//	task configuration.Task: The task to be processed.
+//	results chan<- string: Channel to return execution results to the caller.
+//	logger *zap.Logger: Logger for structured logging within the worker.
+//	taskStatus *TaskStatusMap: Map to track and control the status of tasks.
+//	workerIndex int: Identifier for the worker instance for logging.
 func processTask(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, results chan<- string, logger *zap.Logger, taskStatus *TaskStatusMap, workerIndex int) {
 	if !taskStatus.Claim(task.Name) {
 		return
@@ -67,12 +67,12 @@ func processTask(ctx context.Context, clientset *kubernetes.Clientset, shipsName
 //
 // Parameters:
 //
-//	task: The task that has failed.
-//	taskStatus: Map to track and control the status of tasks.
-//	shipsNamespace: Namespace in Kubernetes associated with the task.
-//	err: The error that occurred during task processing.
-//	results: Channel to return execution results to the caller.
-//	workerIndex: Identifier for the worker instance for logging.
+//	task configuration.Task: The task that has failed.
+//	taskStatus *TaskStatusMap: Map to track and control the status of tasks.
+//	shipsNamespace string: Namespace in Kubernetes associated with the task.
+//	err error: The error that occurred during task processing.
+//	results chan<- string: Channel to return execution results to the caller.
+//	workerIndex int: Identifier for the worker instance for logging.
 func handleFailedTask(task configuration.Task, taskStatus *TaskStatusMap, shipsNamespace string, err error, results chan<- string, workerIndex int) {
 	taskStatus.Release(task.Name)
 	logFinalError(shipsNamespace, task.Name, err, task.MaxRetries)
@@ -84,9 +84,9 @@ func handleFailedTask(task configuration.Task, taskStatus *TaskStatusMap, shipsN
 //
 // Parameters:
 //
-//	task: The task that has been successfully completed.
-//	results: Channel to return execution results to the caller.
-//	workerIndex: Identifier for the worker instance for logging.
+//	task configuration.Task: The task that has been successfully completed.
+//	results chan<- string: Channel to return execution results to the caller.
+//	workerIndex int: Identifier for the worker instance for logging.
 func handleSuccessfulTask(task configuration.Task, results chan<- string, workerIndex int) {
 	successMessage := fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.TaskCompleteS, task.Name))
 	results <- successMessage
@@ -98,15 +98,17 @@ func handleSuccessfulTask(task configuration.Task, results chan<- string, worker
 // it returns an error detailing the failure.
 //
 // Parameters:
-//   - ctx: Context for task cancellation and timeouts.
-//   - clientset: Kubernetes API client for executing tasks.
-//   - shipsNamespace: Kubernetes namespace for task execution.
-//   - task: Task to be executed.
-//   - results: Channel for reporting task execution results.
-//   - workerIndex: Index of the worker for contextual logging.
+//
+//	ctx context.Context: Context for task cancellation and timeouts.
+//	clientset *kubernetes.Clientset: Kubernetes API client for executing tasks.
+//	shipsNamespace string: Kubernetes namespace for task execution.
+//	task configuration.Task: Task to be executed.
+//	results chan<- string: Channel for reporting task execution results.
+//	workerIndex int: Index of the worker for contextual logging.
 //
 // Returns:
-//   - error: Error if the task fails after all retry attempts.
+//
+//	error: Error if the task fails after all retry attempts.
 func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, results chan<- string, workerIndex int) error {
 	for attempt := 0; attempt < task.MaxRetries; attempt++ {
 		err := performTask(ctx, clientset, shipsNamespace, task, workerIndex)
@@ -129,10 +131,10 @@ func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset
 //
 // Parameters:
 //
-//	ctx: The context governing cancellation.
-//	clientset: The Kubernetes client set used for interacting with the Kubernetes API.
-//	shipsnamespace: The Kubernetes namespace where the pod is located.
-//	task: The task containing the parameters that need to be updated with the latest pod information.
+//	ctx context.Context: The context governing cancellation.
+//	clientset *kubernetes.Clientset: The Kubernetes client set used for interacting with the Kubernetes API.
+//	shipsNamespace string: The Kubernetes namespace where the pod is located.
+//	task *configuration.Task: The task containing the parameters that need to be updated with the latest pod information.
 //
 // Returns:
 //
@@ -189,10 +191,12 @@ func CrewProcessPods(ctx context.Context, pods []corev1.Pod, results chan<- stri
 // It returns true if the pod is in the running phase and all its containers are ready.
 //
 // Parameters:
-//   - pod: The pod to check for health status.
+//
+//	pod *corev1.Pod: The pod to check for health status.
 //
 // Returns:
-//   - bool: True if the pod is considered healthy, false otherwise.
+//
+//	bool: True if the pod is considered healthy, false otherwise.
 func CrewCheckingisPodHealthy(pod *corev1.Pod) bool {
 	// Check if the pod is in the running phase.
 	if pod.Status.Phase != corev1.PodRunning {
