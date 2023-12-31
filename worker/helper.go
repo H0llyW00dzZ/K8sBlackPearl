@@ -4,6 +4,9 @@ import (
 	"fmt"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
+	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
+	"github.com/H0llyW00dzZ/K8sBlackPearl/worker/configuration"
+	"go.uber.org/zap"
 )
 
 // getParamAsString retrieves a string value from a map based on a key.
@@ -78,5 +81,30 @@ func getParamAsInt(params map[string]interface{}, key string) (int, error) {
 		return v, nil
 	default:
 		return 0, fmt.Errorf(language.ErrorParameterMustBeInteger, key)
+	}
+}
+
+// logTaskStart logs the start of a task runner with a custom message and additional fields.
+// message - the message to log, which should describe the task being started.
+// fields - a slice of zap.Field items that provide additional context for the log entry.
+func logTaskStart(message string, fields []zap.Field) {
+	navigator.LogInfoWithEmoji(language.PirateEmoji, message, fields...)
+}
+
+func createLogFieldsForRunnerTask(task configuration.Task, shipsNamespace string, taskType string) []zap.Field {
+	return navigator.CreateLogFields(
+		taskType,
+		shipsNamespace,
+		navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
+	)
+}
+
+func logErrorWithFields(err error, fields []zap.Field) {
+	navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, err.Error(), fields...)
+}
+
+func logResultsFromChannel(results chan string, fields []zap.Field) {
+	for result := range results {
+		navigator.LogInfoWithEmoji(language.PirateEmoji, result, fields...)
 	}
 }
