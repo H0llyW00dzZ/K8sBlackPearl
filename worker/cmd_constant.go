@@ -33,6 +33,7 @@ const (
 	storageSize      = "storageSize"
 	policyNamE       = "policyName"
 	policySpeC       = "policySpec"
+	retryDelay       = "retryDelay"
 )
 
 // defined notice message just like human would type
