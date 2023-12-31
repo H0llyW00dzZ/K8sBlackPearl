@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
@@ -190,48 +191,47 @@ func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Cl
 	// Use the provided logging pattern
 	fields := createLogFieldsForRunnerTask(task, shipsNamespace, language.TaskScaleDeployment)
 	logTaskStart(fmt.Sprintf(language.ScalingDeployment, workerIndex), fields)
-
-	// Extract "deploymentName" and "replicas" from the task's parameters
-	deploymentName, err := getParamAsString(task.Parameters, deploYmentName)
+	// Extract "deploymentName" and "replicas" include "retryDelayDuration" from the task's parameters
+	deploymentName, replicas, retryDelayDuration, err := c.extractScaleParameters(task)
 	if err != nil {
-		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
-		return fmt.Errorf(language.ErrorParameterMustBeString, err)
+		logErrorWithFields(err, fields)
+		return err
 	}
-
-	replicas, err := getParamAsInt(task.Parameters, repliCas)
-	if err != nil {
-		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
-		return fmt.Errorf(language.ErrorParameterMustBeInteger, err)
-	}
-
-	// Parse the RetryDelay string into a time.Duration
-	retryDelayDuration, err := configuration.ParseDuration(task.RetryDelay)
-	if err != nil {
-		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.ErrorFailedToParseRetryDelayFMT, fields...)
-		return fmt.Errorf(language.ErrorFailedToParseRetryDelayFromTask, task.Name, err)
-	}
-
 	// Create a channel for results and defer its closure
 	results := make(chan string, 1)
 	defer close(results)
 
-	// Call the ScaleDeployment function with the new parameters
-	err = ScaleDeployment(ctx, clientset, shipsNamespace, deploymentName, replicas, task.MaxRetries, retryDelayDuration, results, zap.L())
+	err = c.performScaling(ctx, clientset, shipsNamespace, deploymentName, replicas, task.MaxRetries, retryDelayDuration, results)
 	if err != nil {
-		// Log the error with the custom logging function
-		errorFields := append(fields, zap.String(language.Error, err.Error()))
-		failedMessage := fmt.Sprintf("%v %s", constant.ErrorEmoji, language.ErrorFailedtoScalingDeployment)
-		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, failedMessage, errorFields...)
+		logErrorWithFields(err, fields)
 		return err
 	}
 
-	// Read from the results channel and log the outcome
-	for scaleResult := range results {
-		// Log the result with the custom logging function
-		navigator.LogInfoWithEmoji(language.PirateEmoji, scaleResult, fields...)
+	logResultsFromChannel(results, fields)
+	return nil
+}
+
+func (c *CrewScaleDeployments) extractScaleParameters(task configuration.Task) (string, int, time.Duration, error) {
+	deploymentName, err := getParamAsString(task.Parameters, deploYmentName)
+	if err != nil {
+		return "", 0, 0, fmt.Errorf(language.ErrorParameterMustBeString, err)
 	}
 
-	return nil
+	replicas, err := getParamAsInt(task.Parameters, repliCas)
+	if err != nil {
+		return "", 0, 0, fmt.Errorf(language.ErrorParameterMustBeInteger, err)
+	}
+
+	retryDelayDuration, err := configuration.ParseDuration(task.RetryDelay)
+	if err != nil {
+		return "", 0, 0, fmt.Errorf(language.ErrorFailedToParseRetryDelayFromTask, task.Name, err)
+	}
+
+	return deploymentName, replicas, retryDelayDuration, nil
+}
+
+func (c *CrewScaleDeployments) performScaling(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace, deploymentName string, replicas, maxRetries int, retryDelayDuration time.Duration, results chan<- string) error {
+	return ScaleDeployment(ctx, clientset, shipsNamespace, deploymentName, replicas, maxRetries, retryDelayDuration, results, zap.L())
 }
 
 // CrewUpdateImageDeployments contains information required to update the image of a Kubernetes deployment.
