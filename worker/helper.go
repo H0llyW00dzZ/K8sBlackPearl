@@ -13,7 +13,7 @@ import (
 // It returns an error if the key is not present or the value is not a string.
 //
 //	params map[string]interface{}: a map of parameters where the key is expected to be associated with a string value.
-//	key: the key for which to retrieve the string value.
+//	key string: the key for which to retrieve the string value.
 //
 // Returns the string value and nil on success, or an empty string and an error on failure.
 func getParamAsString(params map[string]interface{}, key string) (string, error) {
@@ -29,7 +29,7 @@ func getParamAsString(params map[string]interface{}, key string) (string, error)
 // It returns an error if the key is not present or the value is not a number.
 //
 //	params map[string]interface{}: a map of parameters where the key is expected to be associated with an integer value.
-//	key: the key for which to retrieve the integer value.
+//	key string: the key for which to retrieve the integer value.
 //
 // Returns the int64 value and nil on success, or 0 and an error on failure.
 func getParamAsInt64(params map[string]interface{}, key string) (int64, error) {
@@ -64,8 +64,8 @@ func getParamAsInt64(params map[string]interface{}, key string) (int64, error) {
 //
 // Params:
 //
-//	params: map[string]interface{} - The map containing parameter keys and values.
-//	key: string - The key corresponding to the integer parameter to be retrieved.
+//	params map[string]interface{}: The map containing parameter keys and values.
+//	key string: The key corresponding to the integer parameter to be retrieved.
 //
 // Returns:
 //
@@ -87,13 +87,22 @@ func getParamAsInt(params map[string]interface{}, key string) (int, error) {
 }
 
 // logTaskStart logs the start of a task runner with a custom message and additional fields.
+// It uses an emoji for visual emphasis in the log.
 //
-//	message string: the message to log, which should describe the task being started.
-//	fields []zap.Field: a slice of zap.Field items that provide additional context for the log entry.
+//	message string: The message to log, which should describe the task being started.
+//	fields []zap.Field: A slice of zap.Field items that provide additional context for the log entry.
 func logTaskStart(message string, fields []zap.Field) {
 	navigator.LogInfoWithEmoji(language.PirateEmoji, message, fields...)
 }
 
+// createLogFieldsForRunnerTask generates a slice of zap.Field items for structured logging.
+// It is used to create log fields that describe a runner task, including the task type and namespace.
+//
+//	task configuration.Task: The task for which to create log fields.
+//	shipsNamespace string: The namespace associated with the task.
+//	taskType string: The type of the task being logged.
+//
+// Returns a slice of zap.Field items that can be used for structured logging.
 func createLogFieldsForRunnerTask(task configuration.Task, shipsNamespace string, taskType string) []zap.Field {
 	return navigator.CreateLogFields(
 		taskType,
@@ -102,10 +111,20 @@ func createLogFieldsForRunnerTask(task configuration.Task, shipsNamespace string
 	)
 }
 
+// logErrorWithFields logs an error message with additional fields for context.
+// It uses an emoji and rate limiting for logging errors to avoid flooding the log with repetitive messages.
+//
+//	err error: The error to log.
+//	fields []zap.Field: A slice of zap.Field items that provide additional context for the error log entry.
 func logErrorWithFields(err error, fields []zap.Field) {
 	navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, err.Error(), fields...)
 }
 
+// logResultsFromChannel logs messages received from a channel.
+// It continues to log until the channel is closed.
+//
+//	results chan string: A channel from which to read result strings to log.
+//	fields []zap.Field: A slice of zap.Field items that provide additional context for each log entry.
 func logResultsFromChannel(results chan string, fields []zap.Field) {
 	for result := range results {
 		navigator.LogInfoWithEmoji(language.PirateEmoji, result, fields...)
