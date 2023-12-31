@@ -6,7 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
+	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"gopkg.in/yaml.v2"
 )
 
@@ -25,7 +27,10 @@ type Task struct {
 	// Name is a unique identifier for the task.
 	Name string `json:"name" yaml:"name"`
 	// ShipsNamespace specifies the Kubernetes namespace in which the task is relevant.
-	ShipsNamespace string `json:"shipsNamespace" yaml:"shipsNamespace"`
+	ShipsNamespace     string        `json:"shipsNamespace" yaml:"shipsNamespace"`
+	MaxRetries         int           `json:"maxRetries" yaml:"maxRetries"`
+	RetryDelay         string        `json:"retryDelay" yaml:"retryDelay"` // Original string from JSON/YAML
+	RetryDelayDuration time.Duration // Parsed duration
 	// Type indicates the kind of operation this task represents, such as "GetPods" or "CrewWriteLabelPods".
 	Type string `json:"type" yaml:"type"`
 	// Parameters is a map of key-value pairs that provide additional details required to execute the task.
@@ -51,6 +56,14 @@ func LoadTasksFromJSON(filePath string) ([]Task, error) {
 		return nil, err
 	}
 
+	for i, task := range tasks {
+		duration, err := ParseDuration(task.RetryDelay)
+		if err != nil {
+			return nil, fmt.Errorf(language.ErrorFailedToParseRetryDelayFromTask, task.Name, err)
+		}
+		tasks[i].RetryDelayDuration = duration
+	}
+
 	return tasks, nil
 }
 
@@ -71,6 +84,14 @@ func LoadTasksFromYAML(filePath string) ([]Task, error) {
 	err = yaml.Unmarshal(file, &tasks)
 	if err != nil {
 		return nil, err
+	}
+
+	for i, task := range tasks {
+		duration, err := ParseDuration(task.RetryDelay)
+		if err != nil {
+			return nil, fmt.Errorf(language.ErrorFailedToParseRetryDelayFromTask, task.Name, err)
+		}
+		tasks[i].RetryDelayDuration = duration
 	}
 
 	return tasks, nil
@@ -94,4 +115,15 @@ func LoadTasks(filePath string) ([]Task, error) {
 	default:
 		return nil, fmt.Errorf(errorUnsupportedFileExtension, ext)
 	}
+}
+
+func ParseDuration(durationStr string) (time.Duration, error) {
+	if durationStr == "" {
+		return 0, fmt.Errorf(language.ErrorDurationstringisEmpty)
+	}
+	duration, err := time.ParseDuration(durationStr)
+	if err != nil {
+		return 0, fmt.Errorf(language.ErrorFailedToParseDurationFromTask, durationStr, err)
+	}
+	return duration, nil
 }
