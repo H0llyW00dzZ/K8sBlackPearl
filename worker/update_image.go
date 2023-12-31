@@ -31,25 +31,26 @@ import (
 //   - logger: A logger for structured logging.
 //
 // Returns an error if the operation fails after the maximum number of retries or if a non-conflict error is encountered.
-func UpdateDeploymentImage(ctx context.Context, clientset *kubernetes.Clientset, namespace, deploymentName, containerName, newImage string, results chan<- string, logger *zap.Logger) error {
+func UpdateDeploymentImage(ctx context.Context, clientset *kubernetes.Clientset, namespace, deploymentName, containerName, newImage string, maxRetries int, retryDelay time.Duration, results chan<- string, logger *zap.Logger) error {
+	var lastUpdateErr error
 	for attempt := 0; attempt < maxRetries; attempt++ {
-		err := updateImageWithRetry(ctx, clientset, namespace, deploymentName, containerName, newImage)
-		if err == nil {
+		lastUpdateErr = updateImageWithRetry(ctx, clientset, namespace, deploymentName, containerName, newImage)
+		if lastUpdateErr == nil {
 			reportSuccess(results, logger, deploymentName, newImage)
 			return nil
 		}
 
-		if !errors.IsConflict(err) {
-			reportFailure(results, logger, deploymentName, newImage, err)
-			return err
+		if !errors.IsConflict(lastUpdateErr) {
+			reportFailure(results, logger, deploymentName, newImage, lastUpdateErr)
+			return lastUpdateErr
 		}
 
 		navigator.LogInfoWithEmoji(language.SwordEmoji, fmt.Sprintf(language.ErrorConflictUpdateImage, deploymentName))
 		time.Sleep(retryDelay)
 	}
 
-	reportMaxRetriesFailure(results, logger, deploymentName, newImage)
-	return fmt.Errorf(language.ErrorReachedMaxRetries)
+	reportMaxRetriesFailure(results, logger, deploymentName, newImage, maxRetries)
+	return fmt.Errorf(language.ErrorFailedToUpdateImageAfterRetries, deploymentName, maxRetries)
 }
 
 // updateImageWithRetry attempts to update the deployment image, retrying on conflicts.
@@ -104,7 +105,7 @@ func reportFailure(results chan<- string, logger *zap.Logger, deploymentName, ne
 // reportMaxRetriesFailure sends a message to the results channel and logs the failure after reaching the maximum number of retries.
 //
 // This function is unexported and used internally by UpdateDeploymentImage.
-func reportMaxRetriesFailure(results chan<- string, logger *zap.Logger, deploymentName, newImage string) {
+func reportMaxRetriesFailure(results chan<- string, logger *zap.Logger, deploymentName, newImage string, maxRetries int) {
 	failMessage := fmt.Sprintf(language.ErrorFailedToUpdateImageAfterRetries, deploymentName, maxRetries)
 	results <- failMessage
 	navigator.LogErrorWithEmojiRateLimited(constant.ErrorEmoji, failMessage)
