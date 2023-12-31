@@ -20,16 +20,20 @@ import (
 // sent through the results channel, and logs are produced accordingly.
 //
 // Parameters:
-//   - ctx: Context for cancellation and timeout of the scaling process.
-//   - clientset: Kubernetes API client for interacting with the cluster.
-//   - namespace: The namespace of the deployment.
-//   - deploymentName: The name of the deployment to scale.
-//   - scale: The desired number of replicas to scale to.
-//   - results: A channel for sending the results of the scaling operation.
-//   - logger: A structured logger for logging information and errors.
+//
+//	ctx context.Context: Context for cancellation and timeout of the scaling process.
+//	clientset *kubernetes.Clientset: Kubernetes API client for interacting with the cluster.
+//	namespace string: The namespace of the deployment.
+//	deploymentName string: The name of the deployment to scale.
+//	scale int: The desired number of replicas to scale to.
+//	maxRetries int: The maximum number of retries for the scaling operation.
+//	retryDelay time.Duration: The duration to wait before retrying the scaling operation.
+//	results chan<- string: A channel for sending the results of the scaling operation.
+//	logger *zap.Logger: A structured logger for logging information and errors.
 //
 // Returns:
-//   - error: An error if scaling fails after all retries, or nil on success.
+//
+//	error: An error if scaling fails after all retries, or nil on success.
 func ScaleDeployment(ctx context.Context, clientset *kubernetes.Clientset, namespace string, deploymentName string, scale int, maxRetries int, retryDelay time.Duration, results chan<- string, logger *zap.Logger) error {
 	var lastScaleErr error
 	for attempt := 0; attempt < maxRetries; attempt++ {
@@ -73,14 +77,16 @@ func ScaleDeployment(ctx context.Context, clientset *kubernetes.Clientset, names
 // It updates the deployment's replica count and handles any errors that occur during the update process.
 //
 // Parameters:
-//   - ctx: Context for cancellation and timeout of the scaling operation.
-//   - clientset: Kubernetes API client for interacting with the cluster.
-//   - namespace: The namespace of the deployment.
-//   - deploymentName: The name of the deployment to scale.
-//   - scale: The desired number of replicas to scale to.
+//
+//	ctx context.Context: Context for cancellation and timeout of the scaling operation.
+//	clientset *kubernetes.Clientset: Kubernetes API client for interacting with the cluster.
+//	namespace string: The namespace of the deployment.
+//	deploymentName string: The name of the deployment to scale.
+//	scale int: The desired number of replicas to scale to.
 //
 // Returns:
-//   - error: An error if the scaling operation fails, or nil if the operation is successful.
+//
+//	error: An error if the scaling operation fails, or nil if the operation is successful.
 func scaleDeploymentOnce(ctx context.Context, clientset *kubernetes.Clientset, namespace string, deploymentName string, scale int) error {
 	// Get the current deployment.
 	deployment, getErr := clientset.AppsV1().Deployments(namespace).Get(ctx, deploymentName, v1.GetOptions{})
@@ -104,10 +110,12 @@ func scaleDeploymentOnce(ctx context.Context, clientset *kubernetes.Clientset, n
 // This is a helper function used to assign values to fields that expect a pointer to an int32.
 //
 // Parameters:
-//   - i: The int32 value to convert.
+//
+//	i int32: The int32 value to convert.
 //
 // Returns:
-//   - *int32: A pointer to the int32 value.
+//
+//	*int32: A pointer to the int32 value.
 func int32Ptr(i int32) *int32 {
 	return &i
 }
