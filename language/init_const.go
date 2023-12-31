@@ -24,7 +24,7 @@ const (
 	InvalidParameters                      = "invalid parameters"
 	InvalidparametersL                     = "invalid parameters: labelSelector, fieldSelector, or limit"
 	ErrorPodsCancelled                     = "Pod processing was cancelled."
-	ErrorPailedtoListPods                  = "Failed to list pods: %w"
+	ErrorFailedtoListPods                  = "Failed to list pods: %w"
 	ErrorParamLabelSelector                = "parameter 'labelSelector' is required and must be a string"
 	ErrorParamFieldSelector                = "parameter 'fieldSelector' is required and must be a string"
 	ErrorParamLimit                        = "parameter 'limit' is required and must be an integer"
