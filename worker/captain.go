@@ -24,7 +24,7 @@ import (
 //
 // Returns:
 //
-//	<-chan string,: A read-only channel to receive task results.
+//	<-chan string: A read-only channel to receive task results.
 //	func()): A function to call for initiating a graceful shutdown of the workers.
 func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []configuration.Task, workerCount int) (<-chan string, func()) {
 	results := make(chan string)
