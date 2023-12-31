@@ -16,15 +16,17 @@ import (
 // It fetches the latest version of the pod to ensure the update is based on the current state of the pod.
 //
 // Parameters:
-//   - ctx: A context.Context for managing cancellation and deadlines.
-//   - clientset: A *kubernetes.Clientset instance used to interact with the Kubernetes API.
-//   - podName: The name of the pod to label.
-//   - namespace: The namespace in which the pod is located.
-//   - labelKey: The key of the label to be added or updated.
-//   - labelValue: The value for the label.
+//
+//	ctx context.Context: A context.Context for managing cancellation and deadlines.
+//	clientset *kubernetes.Clientset: A *kubernetes.Clientset instance used to interact with the Kubernetes API.
+//	podName: The name of the pod to label.
+//	namespace: The namespace in which the pod is located.
+//	labelKey: The key of the label to be added or updated.
+//	labelValue string: The value for the label.
 //
 // Returns:
-//   - An error if the pod cannot be retrieved or updated with the new label.
+//
+//	error: An error if the pod cannot be retrieved or updated with the new label.
 func labelSinglePodWithResourceVersion(ctx context.Context, clientset *kubernetes.Clientset, podName, namespace, labelKey, labelValue string) error {
 	latestPod, err := fetchLatestPodVersion(ctx, clientset, podName, namespace)
 	if err != nil {
@@ -42,14 +44,16 @@ func labelSinglePodWithResourceVersion(ctx context.Context, clientset *kubernete
 // This is necessary to avoid conflicts when updating the pod's labels.
 //
 // Parameters:
-//   - ctx: A context.Context for managing cancellation and deadlines.
-//   - clientset: A *kubernetes.Clientset instance used to interact with the Kubernetes API.
-//   - podName: The name of the pod to retrieve.
-//   - namespace: The namespace in which the pod is located.
+//
+//	ctx context.Context: A context.Context for managing cancellation and deadlines.
+//	clientset *kubernetes.Clientset: A *kubernetes.Clientset instance used to interact with the Kubernetes API.
+//	podName: The name of the pod to retrieve.
+//	namespace string: The namespace in which the pod is located.
 //
 // Returns:
-//   - A pointer to the retrieved corev1.Pod instance.
-//   - An error if the pod cannot be retrieved.
+//
+//	*corev1.Pod: A pointer to the retrieved corev1.Pod instance.
+//	error: An error if the pod cannot be retrieved.
 func fetchLatestPodVersion(ctx context.Context, clientset *kubernetes.Clientset, podName, namespace string) (*corev1.Pod, error) {
 	return clientset.CoreV1().Pods(namespace).Get(ctx, podName, v1.GetOptions{})
 }
@@ -58,12 +62,14 @@ func fetchLatestPodVersion(ctx context.Context, clientset *kubernetes.Clientset,
 // It compares the existing labels of the pod to the desired label.
 //
 // Parameters:
-//   - pod: A pointer to the corev1.Pod instance to check.
-//   - labelKey: The key of the label to be added or updated.
-//   - labelValue: The value for the label.
+//
+//	pod *corev1.Pod: A pointer to the corev1.Pod instance to check.
+//	labelKey: The key of the label to be added or updated.
+//	labelValue string: The value for the label.
 //
 // Returns:
-//   - True if the pod needs to be updated, false otherwise.
+//
+//	bool: True if the pod needs to be updated, false otherwise.
 func shouldUpdatePod(pod *corev1.Pod, labelKey, labelValue string) bool {
 	return pod.Labels[labelKey] != labelValue
 }
@@ -72,16 +78,18 @@ func shouldUpdatePod(pod *corev1.Pod, labelKey, labelValue string) bool {
 // It ensures that only the labels are updated, leaving the rest of the pod configuration unchanged.
 //
 // Parameters:
-//   - ctx: A context.Context for managing cancellation and deadlines.
-//   - clientset: A *kubernetes.Clientset instance used to interact with the Kubernetes API.
-//   - pod: A pointer to the corev1.Pod instance to update.
-//   - namespace: The namespace in which the pod is located.
-//   - podName: The name of the pod to update.
-//   - labelKey: The key of the label to be added or updated.
-//   - labelValue: The value for the label.
+//
+//	ctx context.Context: A context.Context for managing cancellation and deadlines.
+//	clientset *kubernetes.Clientset: A *kubernetes.Clientset instance used to interact with the Kubernetes API.
+//	pod *corev1.Pod: A pointer to the corev1.Pod instance to update.
+//	namespace: The namespace in which the pod is located.
+//	podName: The name of the pod to update.
+//	labelKey: The key of the label to be added or updated.
+//	labelValue string: The value for the label.
 //
 // Returns:
-//   - An error if the patch cannot be created or applied to the pod.
+//
+//	error: An error if the patch cannot be created or applied to the pod.
 func updatePodLabels(ctx context.Context, clientset *kubernetes.Clientset, pod *corev1.Pod, namespace, podName, labelKey, labelValue string) error {
 	pod.Labels = getUpdatedLabels(pod.Labels, labelKey, labelValue)
 
@@ -106,12 +114,14 @@ func updatePodLabels(ctx context.Context, clientset *kubernetes.Clientset, pod *
 // If the original labels map is nil, it initializes a new map before adding the label.
 //
 // Parameters:
-//   - labels: The original map of labels to update.
-//   - labelKey: The key of the label to be added or updated.
-//   - labelValue: The value for the label.
+//
+//	labels map[string]string: The original map of labels to update.
+//	labelKey: The key of the label to be added or updated.
+//	labelValue string: The value for the label.
 //
 // Returns:
-//   - A new map of labels with the updated label included.
+//
+//	map[string]string: A new map of labels with the updated label included.
 func getUpdatedLabels(labels map[string]string, labelKey, labelValue string) map[string]string {
 	if labels == nil {
 		labels = make(map[string]string)
@@ -124,11 +134,13 @@ func getUpdatedLabels(labels map[string]string, labelKey, labelValue string) map
 // This helps in identifying which pod encountered the error when multiple pods are being processed.
 //
 // Parameters:
-//   - podName: The name of the pod related to the error.
-//   - err: The original error to wrap with additional context.
+//
+//	podName string: The name of the pod related to the error.
+//	err error: The original error to wrap with additional context.
 //
 // Returns:
-//   - An error that includes the pod name and the original error message.
+//
+//	error: An error that includes the pod name and the original error message.
 func wrapPodError(podName string, err error) error {
 	return fmt.Errorf(language.ErrorFailedToUpdateLabelSPods, podName, err)
 }
@@ -138,14 +150,16 @@ func wrapPodError(podName string, err error) error {
 // to the labelSinglePod function.
 //
 // Parameters:
-//   - ctx: A context.Context for managing cancellation and deadlines.
-//   - clientset: A *kubernetes.Clientset instance used to interact with the Kubernetes API.
-//   - namespace: The namespace in which the pods are located.
-//   - labelKey: The key of the label to be added or updated.
-//   - labelValue: The value for the label.
+//
+//	ctx context.Context: A context.Context for managing cancellation and deadlines.
+//	clientset *kubernetes.Clientset: A *kubernetes.Clientset instance used to interact with the Kubernetes API.
+//	namespace: The namespace in which the pods are located.
+//	labelKey: The key of the label to be added or updated.
+//	labelValue string: The value for the label.
 //
 // Returns:
-//   - An error if listing pods or updating any pod's labels fails.
+//
+//	error: An error if listing pods or updating any pod's labels fails.
 func LabelPods(ctx context.Context, clientset *kubernetes.Clientset, namespace, labelKey, labelValue string) error {
 	// Retrieve a list of all pods in the given namespace using the provided context.
 	pods, err := clientset.CoreV1().Pods(namespace).List(ctx, v1.ListOptions{})
@@ -167,15 +181,17 @@ func LabelPods(ctx context.Context, clientset *kubernetes.Clientset, namespace, 
 // if the label is not already set to the desired value.
 //
 // Parameters:
-//   - ctx: A context.Context for managing cancellation and deadlines.
-//   - clientset: A *kubernetes.Clientset instance used to interact with the Kubernetes API.
-//   - pod: A pointer to the corev1.Pod instance to label.
-//   - namespace: The namespace in which the pod is located.
-//   - labelKey: The key of the label to be added or updated.
-//   - labelValue: The value for the label.
+//
+//	ctx context.Context: A context.Context for managing cancellation and deadlines.
+//	clientset *kubernetes.Clientset: A *kubernetes.Clientset instance used to interact with the Kubernetes API.
+//	pod *corev1.Pod: A pointer to the corev1.Pod instance to label.
+//	namespace: The namespace in which the pod is located.
+//	labelKey: The key of the label to be added or updated.
+//	labelValue string: The value for the label.
 //
 // Returns:
-//   - An error if the pod's labels cannot be updated.
+//
+//	error: An error if the pod's labels cannot be updated.
 func labelSinglePod(ctx context.Context, clientset *kubernetes.Clientset, pod *corev1.Pod, namespace, labelKey, labelValue string) error {
 	// If the pod already has the label with the correct value, skip updating.
 	if pod.Labels[labelKey] == labelValue {
@@ -205,12 +221,14 @@ func labelSinglePod(ctx context.Context, clientset *kubernetes.Clientset, pod *c
 // before they are used to label pods.
 //
 // Parameters:
-//   - parameters: A map of interface{} values that should contain the labeling parameters.
+//
+//	parameters map[string]interface{}: A map of interface{} values that should contain the labeling parameters.
 //
 // Returns:
-//   - labelKey: The extracted label key as a string if present and of type string.
-//   - labelValue: The extracted label value as a string if present and of type string.
-//   - err: An error if either the label key or value is missing from the parameters or is not a string.
+//
+//	labelKey string: The extracted label key as a string if present and of type string.
+//	labelValue string: The extracted label value as a string if present and of type string.
+//	err error: An error if either the label key or value is missing from the parameters or is not a string.
 //
 // The function will return an error if the required parameters ("labelKey" and "labelValue") are
 // not found in the input map, or if they are not of type string. This error can then be handled
