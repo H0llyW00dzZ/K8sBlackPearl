@@ -72,6 +72,7 @@ const (
 	ErrorFailedToParseRetryDelayFMT        = "Failed to parse retry delay"
 	ErrorFailedToParseDurationFromTask     = "failed to parse duration from task %s: %w"
 	ErrorDurationstringisEmpty             = "duration string is empty"
+	ErrorFailedtoExtractParameter          = "failed to extract parameter '%s': %w"
 )
 
 const (
