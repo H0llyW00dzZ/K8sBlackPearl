@@ -30,7 +30,7 @@ import (
 //
 // Returns:
 //   - error: An error if scaling fails after all retries, or nil on success.
-func ScaleDeployment(ctx context.Context, clientset *kubernetes.Clientset, namespace string, deploymentName string, scale int, results chan<- string, logger *zap.Logger) error {
+func ScaleDeployment(ctx context.Context, clientset *kubernetes.Clientset, namespace string, deploymentName string, scale int, maxRetries int, retryDelay time.Duration, results chan<- string, logger *zap.Logger) error {
 	var lastScaleErr error
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		lastScaleErr = scaleDeploymentOnce(ctx, clientset, namespace, deploymentName, scale)
