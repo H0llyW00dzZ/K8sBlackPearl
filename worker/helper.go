@@ -12,6 +12,34 @@ import (
 	"go.uber.org/zap"
 )
 
+// RetryPolicy defines the policy for retrying operations.
+type RetryPolicy struct {
+	MaxRetries int
+	RetryDelay time.Duration
+}
+
+// Execute runs the given operation according to the retry policy.
+func (r *RetryPolicy) Execute(ctx context.Context, operation func() (string, error), logFunc func(string, ...zap.Field)) error {
+	var lastErr error
+	for attempt := 0; attempt < r.MaxRetries; attempt++ {
+		select {
+		case <-ctx.Done():
+			return ctx.Err() // Context was cancelled, return the context error.
+		default:
+			taskName, err := operation()
+			if err == nil {
+				return nil // The operation was successful, return nil error.
+			}
+			lastErr = err
+			logRetryAttempt(taskName, attempt, err, r.MaxRetries, logFunc)
+			if attempt < r.MaxRetries-1 {
+				time.Sleep(r.RetryDelay) // Wait before the next attempt.
+			}
+		}
+	}
+	return fmt.Errorf(language.ErrorFailedToCompleteAfterAttempts, r.MaxRetries, lastErr)
+}
+
 // getParamAsString retrieves a string value from a map based on a key.
 // It returns an error if the key is not present or the value is not a string.
 //
@@ -136,54 +164,6 @@ func logResultsFromChannel(results chan string, fields []zap.Field) {
 	for result := range results {
 		navigator.LogInfoWithEmoji(language.PirateEmoji, result, fields...)
 	}
-}
-
-// withRetries executes an operation with a specified number of retries.
-// It accepts a context for cancellation, the maximum number of retries, a delay between retries,
-// and the operation to be executed as a function that returns a string and an error.
-//
-// The operation is attempted up to maxRetries times until it succeeds or the context is cancelled.
-// If the operation fails, it logs the retry attempt and waits for retryDelay before retrying.
-// The operation is considered successful if it returns a nil error.
-//
-//	ctx context.Context: The context that controls the cancellation of the retries.
-//	maxRetries int: The maximum number of times to retry the operation.
-//	retryDelay time.Duration: The amount of time to wait between each retry attempt.
-//	operation func() (string, error): The operation to be executed, which returns a result string and error.
-//
-// Returns an error if the operation does not succeed within the maximum number of retries or if the context is cancelled.
-func withRetries(ctx context.Context, maxRetries int, retryDelay time.Duration, operation func() (string, error)) error {
-	for attempt := 0; attempt < maxRetries; attempt++ {
-		taskName, err := attemptOperation(ctx, attempt, operation)
-		if err == nil {
-			return nil // The operation was successful, return nil error.
-		}
-		if ctx.Err() != nil {
-			return ctx.Err() // The context has been cancelled, return the context error.
-		}
-		logRetryAttempt(taskName, attempt, err, maxRetries)
-		if attempt < maxRetries-1 && !waitForNextAttempt(ctx, retryDelay) {
-			// Only wait for the next attempt if we have more retries left and context is not done.
-			return ctx.Err() // Context was cancelled during wait, return the context error.
-		}
-	}
-	return fmt.Errorf(language.ErrorSailingShips, maxRetries)
-}
-
-// attemptOperation attempts to execute an operation within a retry mechanism.
-// It is a helper function used by withRetries to encapsulate the single attempt logic.
-//
-//	ctx context.Context: The context that controls the cancellation of the operation.
-//	attempt int: The current attempt number.
-//	operation func() (string, error): The operation to be executed, which returns a result string and error.
-//
-// Returns the result string and an error. The error is formatted with the attempt number if the operation fails.
-func attemptOperation(ctx context.Context, attempt int, operation func() (string, error)) (string, error) {
-	taskName, err := operation()
-	if err != nil {
-		return taskName, fmt.Errorf(language.ErrorAttemptFailed, attempt, err)
-	}
-	return taskName, nil
 }
 
 // waitForNextAttempt waits for a specified duration or until the context is cancelled, whichever comes first.
