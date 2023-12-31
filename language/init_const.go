@@ -68,6 +68,10 @@ const (
 	ErrorCreatingPvc                       = "Error creating pvc: %w"
 	ErrorCreatingStorageClass              = "Error creating storage class: %w"
 	ErrorFailedToCreatePvc                 = "Failed to create PVC '%s': %v"
+	ErrorFailedToParseRetryDelayFromTask   = "failed to parse retry delay from task %s: %w"
+	ErrorFailedToParseRetryDelayFMT        = "Failed to parse retry delay"
+	ErrorFailedToParseDurationFromTask     = "failed to parse duration from task %s: %w"
+	ErrorDurationstringisEmpty             = "duration string is empty"
 )
 
 const (
