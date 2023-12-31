@@ -112,11 +112,13 @@ const (
 	TaskUpdateDeploymentImage = "UpdateDeploymentImage"
 	TaskCreatePVC             = "CreatePVCStorage"
 	TaskUpdateNetworkPolicy   = "UpdateNetworkPolicy"
+	WritingLabelPods          = "Crew Worker %d: Writing label"
 	ScalingDeployment         = "Crew Worker %d: Scaling deployments"
 	ManagingDeployments       = "Crew Worker %d: Managing deployments"
 	UpdatingImage             = "Crew Worker %d: Updating deployment image"
 	CreatePVCStorage          = "Crew Worker %d: Creating PVC storage"
 	UpdateNetworkPolicy       = "Crew Worker %d: Updating network policy"
+	CheckingHealthPods        = "Crew Worker %d: Checking health pods"
 )
 
 const (
