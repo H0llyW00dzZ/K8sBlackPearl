@@ -46,15 +46,8 @@ func ScaleDeployment(ctx context.Context, clientset *kubernetes.Clientset, names
 				continue               // Retry scaling
 			} else {
 				// For non-conflict errors, send the error message and return.
-				errorMessage := fmt.Sprintf(language.FailedToScaleDeployment, deploymentName, scale, maxRetries, lastScaleErr)
+				errorMessage := fmt.Sprintf(language.FailedTOScallEdDeployment, deploymentName, scale, lastScaleErr)
 				results <- errorMessage
-				navigator.LogErrorWithEmojiRateLimited(
-					constant.ErrorEmoji,
-					errorMessage,
-					zap.String(deploymenT, deploymentName),
-					zap.Int(scalE, scale),
-					zap.Error(lastScaleErr),
-				)
 				return lastScaleErr
 			}
 		} else {
