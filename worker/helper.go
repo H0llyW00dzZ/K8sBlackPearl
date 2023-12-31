@@ -91,30 +91,6 @@ func logTaskStart(message string, fields []zap.Field) {
 	navigator.LogInfoWithEmoji(language.PirateEmoji, message, fields...)
 }
 
-func extractTaskParams(task configuration.Task, requiredParams ...string) (map[string]interface{}, error) {
-	params := make(map[string]interface{})
-	var err error
-
-	for _, paramName := range requiredParams {
-		switch paramName {
-		case deploYmentName, contaInerName, newImAge, storageClassName, pvcName, policyNamE:
-			params[paramName], err = getParamAsString(task.Parameters, paramName)
-		case repliCas, limIt:
-			params[paramName], err = getParamAsInt(task.Parameters, paramName)
-		case retryDelay:
-			params[paramName], err = configuration.ParseDuration(task.RetryDelay)
-		default:
-			err = fmt.Errorf(language.ErrorParameterInvalid, paramName)
-		}
-
-		if err != nil {
-			return nil, fmt.Errorf(language.ErrorFailedtoExtractParameter, paramName, err)
-		}
-	}
-
-	return params, nil
-}
-
 func createLogFieldsForRunnerTask(task configuration.Task, shipsNamespace string, taskType string) []zap.Field {
 	return navigator.CreateLogFields(
 		taskType,
