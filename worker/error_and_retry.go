@@ -62,7 +62,7 @@ func logFinalError(shipsnamespace string, taskName string, err error, maxRetries
 // Parameters:
 //
 //	ctx context.Context: The context governing cancellation.
-//	*kubernetes.Clientset: The Kubernetes client set used for task operations.
+//	clientset *kubernetes.Clientset: The Kubernetes client set used for task operations.
 //	shipsnamespace string: The Kubernetes namespace where the task was attempted.
 //	err error: The error encountered during the task execution.
 //	attempt int: The current retry attempt number.

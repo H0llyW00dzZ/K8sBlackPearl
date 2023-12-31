@@ -20,14 +20,14 @@ import (
 //
 // Parameters:
 //
-//	ctx: Context for cancellation and timeout of the worker process.
-//	clientset: Kubernetes API client for cluster interactions.
-//	shipsNamespace: Namespace in Kubernetes for task operations.
-//	tasks: List of Task structs, each representing an executable task.
-//	results: Channel to return execution results to the caller.
-//	logger: Logger for structured logging within the worker.
-//	taskStatus: Map to track and control the status of tasks.
-//	workerIndex: Identifier for the worker instance for logging.
+//	ctx context.Context: Context for cancellation and timeout of the worker process.
+//	clientset *kubernetes.Clientset: Kubernetes API client for cluster interactions.
+//	shipsNamespace string: Namespace in Kubernetes for task operations.
+//	tasks []configuration.Task: List of Task structs, each representing an executable task.
+//	results chan<- string: Channel to return execution results to the caller.
+//	logger *zap.Logger: Logger for structured logging within the worker.
+//	taskStatus *TaskStatusMap: Map to track and control the status of tasks.
+//	workerIndex int: Identifier for the worker instance for logging.
 func CrewWorker(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []configuration.Task, results chan<- string, logger *zap.Logger, taskStatus *TaskStatusMap, workerIndex int) {
 	for _, task := range tasks {
 		processTask(ctx, clientset, shipsNamespace, task, results, logger, taskStatus, workerIndex)
