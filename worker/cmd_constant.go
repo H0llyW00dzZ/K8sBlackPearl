@@ -34,6 +34,9 @@ const (
 	policyNamE       = "policyName"
 	policySpeC       = "policySpec"
 	retryDelay       = "retryDelay"
+	tasK             = "task"
+	attempT          = "attempt"
+	maXRetries       = "maxRetries"
 )
 
 // defined notice message just like human would type
