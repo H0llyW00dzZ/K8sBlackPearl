@@ -24,13 +24,16 @@ import (
 //	attempt int: The current retry attempt number.
 //	err error: The error encountered during the task execution that prompted the retry.
 //	maxRetries int: The maximum number of retry attempts.
-func logRetryAttempt(taskName string, attempt int, err error, maxRetries int) {
-	navigator.LogErrorWithEmojiRateLimited(
-		constant.ErrorEmoji,
-		fmt.Sprintf(language.ErrorDuringTaskAttempt, attempt+1, maxRetries, err),
-		zap.String(language.Task_Name, taskName),
+//	logFunc func(string, ...zap.Field): The log function to use.
+func logRetryAttempt(taskName string, attempt int, err error, maxRetries int, logFunc func(string, ...zap.Field)) {
+	message := fmt.Sprintf(language.ErrorDuringTaskAttempt, attempt+1, maxRetries, err)
+	fields := []zap.Field{
+		zap.String(tasK, taskName),
+		zap.Int(attempT, attempt+1),
+		zap.Int(maXRetries, maxRetries),
 		zap.Error(err),
-	)
+	}
+	logFunc(message, fields...)
 }
 
 // logFinalError logs an error message signaling the final failure of a task after all retries.
@@ -127,10 +130,12 @@ func handleConflictError(ctx context.Context, clientset *kubernetes.Clientset, s
 //
 //	bool: A boolean indicating whether the task should be retried or not.
 func handleGenericError(ctx context.Context, err error, attempt int, task *configuration.Task, workerIndex int, maxRetries int, retryDelay time.Duration) bool {
-	logRetryAttempt(task.Name, attempt, err, maxRetries)
-	time.Sleep(retryDelay)
-	if ctx.Err() != nil {
-		return false // Context is canceled, do not continue.
+	logRetryAttempt(task.Name, attempt, err, maxRetries, navigator.Logger.Error)
+
+	// Wait for the next attempt, respecting the context cancellation.
+	if !waitForNextAttempt(ctx, retryDelay) {
+		return false // Context was cancelled during wait, do not continue.
 	}
+
 	return true
 }

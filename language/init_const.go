@@ -76,6 +76,7 @@ const (
 	ErrorSailingShips                      = "sailing ships failed after %d attempts"
 	ErrorAttemptFailed                     = "attempt %d failed: %w"
 	ErrorTaskFailedAfterAttempts           = "task %s failed after %d attempts: %w"
+	ErrorFailedToCompleteAfterAttempts     = "failed to complete after %d attempts: %v"
 )
 
 const (
