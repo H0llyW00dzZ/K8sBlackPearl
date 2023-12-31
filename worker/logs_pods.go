@@ -16,8 +16,9 @@ import (
 // pod list and the actual logging of pod information.
 //
 // Parameters:
-//   - baseFields: A slice of zap.Field structs providing contextual logging information.
-//   - podList: A pointer to a corev1.PodList containing the list of pods to log.
+//
+//	baseFields []zap.Field: A slice of zap.Field structs providing contextual logging information.
+//	podList *corev1.PodList: A pointer to a corev1.PodList containing the list of pods to log.
 func logPods(baseFields []zap.Field, podList *corev1.PodList) {
 	for _, pod := range podList.Items {
 		logPod(baseFields, &pod)
@@ -30,8 +31,9 @@ func logPods(baseFields []zap.Field, podList *corev1.PodList) {
 // for potential reuse in other contexts where individual pod logging is required.
 //
 // Parameters:
-//   - baseFields: A slice of zap.Field structs providing contextual logging information.
-//   - pod: A pointer to a corev1.Pod representing the pod to log information about.
+//
+//	baseFields []zap.Field: A slice of zap.Field structs providing contextual logging information.
+//	pod *corev1.Pod: A pointer to a corev1.Pod representing the pod to log information about.
 func logPod(baseFields []zap.Field, pod *corev1.Pod) {
 	podFields := append([]zap.Field(nil), baseFields...)
 	podFields = append(podFields, zap.String(language.PodsName, pod.Name), zap.String(language.PodStatus, string(pod.Status.Phase)))
@@ -43,11 +45,13 @@ func logPod(baseFields []zap.Field, pod *corev1.Pod) {
 // allowing for asynchronous processing of the results.
 //
 // Parameters:
-//   - ctx: A context.Context to allow for cancellation of the health checks.
-//   - podList: A pointer to a corev1.PodList containing the pods to be checked.
+//
+//	ctx context.Context: A context.Context to allow for cancellation of the health checks.
+//	podList *corev1.PodList: A pointer to a corev1.PodList containing the pods to be checked.
 //
 // Returns:
-//   - A channel of strings, where each string represents a pod's health status message.
+//
+//	chan string: A channel of strings, where each string represents a pods health status message.
 func (c *CrewProcessCheckHealthTask) checkPodsHealth(ctx context.Context, podList *corev1.PodList) chan string {
 	results := make(chan string, len(podList.Items))
 	go c.checkHealthWorker(ctx, podList, results)
@@ -60,9 +64,10 @@ func (c *CrewProcessCheckHealthTask) checkPodsHealth(ctx context.Context, podLis
 // concurrently for efficiency.
 //
 // Parameters:
-//   - ctx: A context.Context to allow for cancellation of the health checks.
-//   - podList: A pointer to a corev1.PodList containing the pods to be checked.
-//   - results: A channel for sending back health status messages.
+//
+//	ctx context.Context: A context.Context to allow for cancellation of the health checks.
+//	podList *corev1.PodList: A pointer to a corev1.PodList containing the pods to be checked.
+//	results chan<- string: A channel for sending back health status messages.
 func (c *CrewProcessCheckHealthTask) checkHealthWorker(ctx context.Context, podList *corev1.PodList, results chan<- string) {
 	defer close(results)
 	for _, pod := range podList.Items {
@@ -84,11 +89,13 @@ func (c *CrewProcessCheckHealthTask) checkHealthWorker(ctx context.Context, podL
 // effectively decouples the logging of results from the health checking process.
 //
 // Parameters:
-//   - ctx: A context.Context to allow for cancellation of the logging process.
-//   - results: A channel from which to read health status messages.
+//
+//	ctx context.Context: A context.Context to allow for cancellation of the logging process.
+//	results chan string: A channel from which to read health status messages.
 //
 // Returns:
-//   - An error if the context is cancelled, signaling incomplete logging.
+//
+//	error: An error if the context is cancelled, signaling incomplete logging.
 func (c *CrewProcessCheckHealthTask) logResults(ctx context.Context, results chan string) error {
 	for {
 		select {
