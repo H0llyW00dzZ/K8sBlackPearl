@@ -7,6 +7,7 @@ import (
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/worker/configuration"
+	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -130,7 +131,7 @@ func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset
 		// Replace this with the actual function to log retries.
 		// For example: navigator.LogInfoWithEmoji or navigator.LogErrorWithEmoji
 		// Combine emojis with a space for readability.
-		emojiField := fmt.Sprintf("%s %s", language.CompassEmoji, language.PirateEmoji)
+		emojiField := fmt.Sprintf("%s %s", constant.ErrorEmoji, language.PirateEmoji)
 		navigator.LogErrorWithEmoji(emojiField, message, fields...)
 	})
 
