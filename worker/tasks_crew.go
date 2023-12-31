@@ -23,7 +23,7 @@ func InitializeTasks(filePath string) ([]configuration.Task, error) {
 // Implementations of TaskRunner should execute tasks based on the provided context,
 // Kubernetes clientset, namespace, and task parameters.
 type TaskRunner interface {
-	Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error
+	Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task configuration.Task, parameters map[string]interface{}, workerIndex int) error
 }
 
 // CrewGetPods is an example TaskRunner which currently only prints the task's parameters.
@@ -36,7 +36,7 @@ type CrewGetPods struct {
 
 // Run prints the task parameters to stdout. This method should be replaced with
 // actual backup logic to fulfill the TaskRunner interface.
-func (b *CrewGetPods) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (b *CrewGetPods) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task configuration.Task, parameters map[string]interface{}, workerIndex int) error {
 	// Implement backup logic here
 	// Note: Currently unimplemented, not ready yet unless you want to implement it as expert.
 	fmt.Println(language.RunningTaskBackup, parameters)
@@ -72,12 +72,12 @@ type CrewGetPodsTaskRunner struct {
 
 // Run lists all pods in the specified namespace and logs each pod's name and status.
 // It uses the provided Kubernetes clientset and context to interact with the Kubernetes cluster.
-func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewGetPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, parameters map[string]interface{}, workerIndex int) error {
 
 	fields := navigator.CreateLogFields(
 		language.TaskFetchPods,
 		shipsNamespace,
-		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+		navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
 	)
 	navigator.LogInfoWithEmoji(
 		language.PirateEmoji,
@@ -110,11 +110,11 @@ type CrewProcessCheckHealthTask struct {
 // Run iterates over the pods in the specified namespace, checks their health status,
 // and sends a formatted status message to the provided results channel.
 // It respects the context's cancellation signal and stops processing if the context is cancelled.
-func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewProcessCheckHealthTask) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, parameters map[string]interface{}, workerIndex int) error {
 	fields := navigator.CreateLogFields(
 		language.TaskCheckHealth,
 		shipsNamespace,
-		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+		navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
 	)
 	navigator.LogInfoWithEmoji(
 		language.PirateEmoji,
@@ -147,11 +147,11 @@ type CrewLabelPodsTaskRunner struct {
 // invoking the labeling operation, and logging the process. The Run method orchestrates these steps,
 // handling any errors that occur during the execution and ensuring that the task's intent is
 // fulfilled effectively.
-func (c *CrewLabelPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewLabelPodsTaskRunner) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, parameters map[string]interface{}, workerIndex int) error {
 	fields := navigator.CreateLogFields(
 		language.TaskLabelPods,
 		shipsNamespace,
-		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+		navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
 	)
 
 	labelKey, labelValue, err := extractLabelParameters(parameters)
@@ -181,7 +181,7 @@ type CrewManageDeployments struct {
 }
 
 // TODO: Add the new TaskRunner for managing deployments.
-func (c *CrewManageDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewManageDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, parameters map[string]interface{}, workerIndex int) error {
 	// Note: Currently unimplemented, not ready yet unless you want to implement it as expert.
 	// This could involve scaling deployments, updating images, etc.
 	return nil
@@ -201,12 +201,12 @@ type CrewScaleDeployments struct {
 // from the task parameters, validates them, and then calls the ScaleDeployment function to adjust the number
 // of replicas for the deployment. The method logs the initiation and completion of the scaling operation
 // and reports any errors encountered during the process.
-func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, parameters map[string]interface{}, workerIndex int) error {
 	// Use the provided logging pattern
 	fields := navigator.CreateLogFields(
 		language.TaskScaleDeployment,
 		shipsNamespace,
-		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+		navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
 	)
 	navigator.LogInfoWithEmoji(
 		language.PirateEmoji,
@@ -214,28 +214,32 @@ func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Cl
 		fields...,
 	)
 
-	// Assume parameters contain "deploymentName" and "replicas" for scaling
-	deploymentName, err := getParamAsString(parameters, deploYmentName)
+	// Extract "deploymentName" and "replicas" from the task's parameters
+	deploymentName, err := getParamAsString(task.Parameters, deploYmentName)
 	if err != nil {
 		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
 		return fmt.Errorf(language.ErrorParameterMustBeString, err)
 	}
 
-	replicas, err := getParamAsInt(parameters, repliCas)
+	replicas, err := getParamAsInt(task.Parameters, repliCas)
 	if err != nil {
 		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.InvalidParameters, fields...)
-		return fmt.Errorf(language.ErrorParameterMustBeString, err)
+		return fmt.Errorf(language.ErrorParameterMustBeInteger, err)
+	}
+
+	// Parse the RetryDelay string into a time.Duration
+	retryDelayDuration, err := configuration.ParseDuration(task.RetryDelay)
+	if err != nil {
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.ErrorFailedToParseRetryDelayFMT, fields...)
+		return fmt.Errorf(language.ErrorFailedToParseRetryDelayFromTask, task.Name, err)
 	}
 
 	// Create a channel for results and defer its closure
 	results := make(chan string, 1)
 	defer close(results)
 
-	// Retrieve the logger from the context or a global variable
-	logger := zap.L()
-
-	// Call the function to scale the deployment
-	err = ScaleDeployment(ctx, clientset, shipsNamespace, deploymentName, replicas, results, logger)
+	// Call the ScaleDeployment function with the new parameters
+	err = ScaleDeployment(ctx, clientset, shipsNamespace, deploymentName, replicas, task.MaxRetries, retryDelayDuration, results, zap.L())
 	if err != nil {
 		// Log the error with the custom logging function
 		errorFields := append(fields, zap.String(language.Error, err.Error()))
@@ -267,12 +271,12 @@ type CrewUpdateImageDeployments struct {
 // It extracts the deployment name, container name, and new image from the task parameters,
 // and then proceeds with the update using the UpdateDeploymentImage function.
 // The method logs the start and end of the update operation and handles any errors encountered.
-func (c *CrewUpdateImageDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewUpdateImageDeployments) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, parameters map[string]interface{}, workerIndex int) error {
 	// Define logging fields for structured logging
 	fields := navigator.CreateLogFields(
 		language.TaskUpdateDeploymentImage,
 		shipsNamespace,
-		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+		navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
 	)
 
 	// Log the start of the update operation
@@ -289,6 +293,12 @@ func (c *CrewUpdateImageDeployments) Run(ctx context.Context, clientset *kuberne
 		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, err.Error(), fields...)
 		return err
 	}
+	// Parse the RetryDelay string into a time.Duration
+	retryDelayDuration, err := configuration.ParseDuration(task.RetryDelay)
+	if err != nil {
+		navigator.LogErrorWithEmojiRateLimited(language.PirateEmoji, language.ErrorFailedToParseRetryDelayFMT, fields...)
+		return fmt.Errorf(language.ErrorFailedToParseRetryDelayFromTask, task.Name, err)
+	}
 
 	// Create a channel to receive results from the update operation
 	results := make(chan string, 1)
@@ -298,7 +308,7 @@ func (c *CrewUpdateImageDeployments) Run(ctx context.Context, clientset *kuberne
 	logger := zap.L()
 
 	// Update the deployment image using the extracted parameters
-	err = UpdateDeploymentImage(ctx, clientset, shipsNamespace, deploymentName, containerName, newImage, results, logger)
+	err = UpdateDeploymentImage(ctx, clientset, shipsNamespace, deploymentName, containerName, newImage, task.MaxRetries, retryDelayDuration, results, logger)
 	if err != nil {
 		// Log the error and return if the update operation fails
 		errorFields := append(fields, zap.String(language.Error, err.Error()))
@@ -333,12 +343,12 @@ type CrewCreatePVCStorage struct {
 //
 // This method orchestrates the task execution by extracting the required parameters,
 // invoking the createPVC function to create the PVC, and handling any errors or logging messages.
-func (c *CrewCreatePVCStorage) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewCreatePVCStorage) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, parameters map[string]interface{}, workerIndex int) error {
 	// Define logging fields for structured logging
 	fields := navigator.CreateLogFields(
 		language.TaskCreatePVC,
 		shipsNamespace,
-		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+		navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
 	)
 
 	// Log the start of the PVC creation operation
@@ -393,12 +403,12 @@ type CrewUpdateNetworkPolicy struct {
 // from the task parameters, updates the policy using the UpdateNetworkPolicy function, and logs the process.
 // The method handles parameter extraction, the update operation, and error reporting. It uses a results channel
 // to report the outcome of the update operation.
-func (c *CrewUpdateNetworkPolicy) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, taskName string, parameters map[string]interface{}, workerIndex int) error {
+func (c *CrewUpdateNetworkPolicy) Run(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, parameters map[string]interface{}, workerIndex int) error {
 	// Define logging fields for structured logging
 	fields := navigator.CreateLogFields(
 		language.TaskUpdateNetworkPolicy,
 		shipsNamespace,
-		navigator.WithAnyZapField(zap.String(language.Task_Name, taskName)),
+		navigator.WithAnyZapField(zap.String(language.Task_Name, task.Name)),
 	)
 
 	// Log the start of the update operation
@@ -458,5 +468,5 @@ func performTask(ctx context.Context, clientset *kubernetes.Clientset, shipsname
 	if err != nil {
 		return err
 	}
-	return runner.Run(ctx, clientset, shipsnamespace, task.Name, task.Parameters, workerIndex)
+	return runner.Run(ctx, clientset, shipsnamespace, task, task.Parameters, workerIndex)
 }
