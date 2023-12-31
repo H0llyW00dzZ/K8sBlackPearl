@@ -51,20 +51,15 @@ func LoadTasksFromJSON(filePath string) ([]Task, error) {
 	}
 
 	var tasks []Task
-	err = json.Unmarshal(file, &tasks)
-	if err != nil {
+	if err := unmarshalJSON(file, &tasks); err != nil {
 		return nil, err
 	}
 
-	for i, task := range tasks {
-		duration, err := ParseDuration(task.RetryDelay)
-		if err != nil {
-			return nil, fmt.Errorf(language.ErrorFailedToParseRetryDelayFromTask, task.Name, err)
-		}
-		tasks[i].RetryDelayDuration = duration
-	}
+	return parseTasks(tasks)
+}
 
-	return tasks, nil
+func unmarshalJSON(file []byte, tasks *[]Task) error {
+	return json.Unmarshal(file, tasks)
 }
 
 // LoadTasksFromYAML reads a YAML file from the provided file path, unmarshals it into a slice of Task structs,
@@ -81,11 +76,18 @@ func LoadTasksFromYAML(filePath string) ([]Task, error) {
 	}
 
 	var tasks []Task
-	err = yaml.Unmarshal(file, &tasks)
-	if err != nil {
+	if err := unmarshalYAML(file, &tasks); err != nil {
 		return nil, err
 	}
 
+	return parseTasks(tasks)
+}
+
+func unmarshalYAML(file []byte, tasks *[]Task) error {
+	return yaml.Unmarshal(file, tasks)
+}
+
+func parseTasks(tasks []Task) ([]Task, error) {
 	for i, task := range tasks {
 		duration, err := ParseDuration(task.RetryDelay)
 		if err != nil {
@@ -93,7 +95,6 @@ func LoadTasksFromYAML(filePath string) ([]Task, error) {
 		}
 		tasks[i].RetryDelayDuration = duration
 	}
-
 	return tasks, nil
 }
 
