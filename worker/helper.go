@@ -138,6 +138,20 @@ func logResultsFromChannel(results chan string, fields []zap.Field) {
 	}
 }
 
+// withRetries executes an operation with a specified number of retries.
+// It accepts a context for cancellation, the maximum number of retries, a delay between retries,
+// and the operation to be executed as a function that returns a string and an error.
+//
+// The operation is attempted up to maxRetries times until it succeeds or the context is cancelled.
+// If the operation fails, it logs the retry attempt and waits for retryDelay before retrying.
+// The operation is considered successful if it returns a nil error.
+//
+//	ctx context.Context: The context that controls the cancellation of the retries.
+//	maxRetries int: The maximum number of times to retry the operation.
+//	retryDelay time.Duration: The amount of time to wait between each retry attempt.
+//	operation func() (string, error): The operation to be executed, which returns a result string and error.
+//
+// Returns an error if the operation does not succeed within the maximum number of retries or if the context is cancelled.
 func withRetries(ctx context.Context, maxRetries int, retryDelay time.Duration, operation func() (string, error)) error {
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		taskName, err := attemptOperation(ctx, attempt, operation)
@@ -156,6 +170,14 @@ func withRetries(ctx context.Context, maxRetries int, retryDelay time.Duration, 
 	return fmt.Errorf(language.ErrorSailingShips, maxRetries)
 }
 
+// attemptOperation attempts to execute an operation within a retry mechanism.
+// It is a helper function used by withRetries to encapsulate the single attempt logic.
+//
+//	ctx context.Context: The context that controls the cancellation of the operation.
+//	attempt int: The current attempt number.
+//	operation func() (string, error): The operation to be executed, which returns a result string and error.
+//
+// Returns the result string and an error. The error is formatted with the attempt number if the operation fails.
 func attemptOperation(ctx context.Context, attempt int, operation func() (string, error)) (string, error) {
 	taskName, err := operation()
 	if err != nil {
@@ -164,6 +186,14 @@ func attemptOperation(ctx context.Context, attempt int, operation func() (string
 	return taskName, nil
 }
 
+// waitForNextAttempt waits for a specified duration or until the context is cancelled, whichever comes first.
+// It is used to implement a delay between retry attempts in the withRetries function.
+//
+//	ctx context.Context: The context that can cancel the waiting.
+//	retryDelay time.Duration: The duration to wait before the next attempt.
+//
+// Returns true if the function waited for the duration specified by retryDelay without the context being cancelled.
+// Returns false if the context is cancelled before the duration elapses.
 func waitForNextAttempt(ctx context.Context, retryDelay time.Duration) bool {
 	select {
 	case <-ctx.Done():
