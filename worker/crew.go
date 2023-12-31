@@ -111,18 +111,33 @@ func handleSuccessfulTask(task configuration.Task, results chan<- string, worker
 //
 //	error: Error if the task fails after all retry attempts.
 func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, results chan<- string, workerIndex int, taskStatus *TaskStatusMap) error {
+	// Define the operation to be retried.
 	operation := func() (string, error) {
 		// Attempt to perform the task.
 		err := performTask(ctx, clientset, shipsNamespace, task, workerIndex)
 		return task.Name, err // Return the task name along with the error.
 	}
 
-	// Use the withRetries helper function to perform the operation with retries.
-	err := withRetries(ctx, task.MaxRetries, task.RetryDelayDuration, operation)
+	// Create a RetryPolicy instance with the task's retry settings.
+	retryPolicy := RetryPolicy{
+		MaxRetries: task.MaxRetries,
+		RetryDelay: task.RetryDelayDuration,
+	}
+
+	// Use the RetryPolicy's Execute method to perform the operation with retries.
+	err := retryPolicy.Execute(ctx, operation, func(message string, fields ...zap.Field) {
+		// This is a placeholder for the actual logging function.
+		// Replace this with the actual function to log retries.
+		// For example: navigator.LogInfoWithEmoji or navigator.LogErrorWithEmoji
+		// Combine emojis with a space for readability.
+		emojiField := fmt.Sprintf("%s %s", language.CompassEmoji, language.PirateEmoji)
+		navigator.LogErrorWithEmoji(emojiField, message, fields...)
+	})
+
 	if err != nil {
 		// If the operation failed after retries, handle the failure.
 		handleFailedTask(task, taskStatus, shipsNamespace, err, results, workerIndex)
-		return fmt.Errorf(language.ErrorTaskFailedAfterAttempts, task.Name, task.MaxRetries, err)
+		return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, task.MaxRetries)
 	}
 
 	// If the operation was successful, handle the success.
