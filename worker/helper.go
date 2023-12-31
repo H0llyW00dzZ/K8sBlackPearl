@@ -12,13 +12,38 @@ import (
 	"go.uber.org/zap"
 )
 
-// RetryPolicy defines the policy for retrying operations.
+// RetryPolicy encapsulates the configuration for how an operation should be retried
+// in the event of a failure. It specifies the maximum number of retries ('MaxRetries')
+// that should be attempted and the delay ('RetryDelay') between each retry attempt.
+//
+// Fields:
+//
+//	MaxRetries int: The maximum number of retry attempts to make before giving up.
+//	RetryDelay time.Duration: The duration to wait between successive retry attempts.
 type RetryPolicy struct {
-	MaxRetries int
-	RetryDelay time.Duration
+	MaxRetries int           // The maximum number of times to retry the operation.
+	RetryDelay time.Duration // The delay between consecutive retry attempts.
 }
 
-// Execute runs the given operation according to the retry policy.
+// Execute runs the given operation according to the retry policy defined by the RetryPolicy struct.
+// It attempts to execute the operation within the context's deadline and retries upon failure
+// according to the MaxRetries and RetryDelay settings.
+//
+// This method takes a context for cancellation, a function representing the operation to be executed,
+// and a logging function to log retries. The operation function is expected to return a string,
+// which usually represents a task name or identifier, and an error indicating the success or failure
+// of the operation. If the operation is successful (no error returned), Execute will return nil.
+// If the operation fails after the maximum number of retries, the last error is returned.
+//
+// The logFunc parameter is a function that adheres to the signature of the zap logging library's
+// logging methods (e.g., Info, Error) and is used to log retry attempts with structured logging fields.
+//
+//	ctx context.Context: The context that controls the cancellation of the operation and retries.
+//	operation func() (string, error): The operation to be executed, which returns a result string and error.
+//	logFunc func(string, ...zap.Field): The logging function to log retry attempts.
+//
+// Returns an error if the operation does not succeed within the maximum number of retries or if
+// the context is cancelled, otherwise returns nil.
 func (r *RetryPolicy) Execute(ctx context.Context, operation func() (string, error), logFunc func(string, ...zap.Field)) error {
 	var lastErr error
 	for attempt := 0; attempt < r.MaxRetries; attempt++ {
