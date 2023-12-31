@@ -12,8 +12,8 @@ import (
 // getParamAsString retrieves a string value from a map based on a key.
 // It returns an error if the key is not present or the value is not a string.
 //
-// params - a map of parameters where the key is expected to be associated with a string value.
-// key - the key for which to retrieve the string value.
+//	params map[string]interface{}: a map of parameters where the key is expected to be associated with a string value.
+//	key: the key for which to retrieve the string value.
 //
 // Returns the string value and nil on success, or an empty string and an error on failure.
 func getParamAsString(params map[string]interface{}, key string) (string, error) {
@@ -28,8 +28,8 @@ func getParamAsString(params map[string]interface{}, key string) (string, error)
 // It handles both int and float64 data types due to the way JSON and YAML unmarshal numbers.
 // It returns an error if the key is not present or the value is not a number.
 //
-// params - a map of parameters where the key is expected to be associated with an integer value.
-// key - the key for which to retrieve the integer value.
+//	params map[string]interface{}: a map of parameters where the key is expected to be associated with an integer value.
+//	key: the key for which to retrieve the integer value.
 //
 // Returns the int64 value and nil on success, or 0 and an error on failure.
 func getParamAsInt64(params map[string]interface{}, key string) (int64, error) {
@@ -63,12 +63,14 @@ func getParamAsInt64(params map[string]interface{}, key string) (int64, error) {
 // is strictly numerical and prevents any unexpected types from causing issues in the application.
 //
 // Params:
-// - params: map[string]interface{} - The map containing parameter keys and values.
-// - key: string - The key corresponding to the integer parameter to be retrieved.
+//
+//	params: map[string]interface{} - The map containing parameter keys and values.
+//	key: string - The key corresponding to the integer parameter to be retrieved.
 //
 // Returns:
-// - int: The extracted integer value associated with the provided key.
-// - error: An error if the key is not found, or if the value is not a type that can be converted to an int.
+//
+//	int: The extracted integer value associated with the provided key.
+//	error: An error if the key is not found, or if the value is not a type that can be converted to an int.
 func getParamAsInt(params map[string]interface{}, key string) (int, error) {
 	value, ok := params[key]
 	if !ok {
@@ -85,8 +87,9 @@ func getParamAsInt(params map[string]interface{}, key string) (int, error) {
 }
 
 // logTaskStart logs the start of a task runner with a custom message and additional fields.
-// message - the message to log, which should describe the task being started.
-// fields - a slice of zap.Field items that provide additional context for the log entry.
+//
+//	message string: the message to log, which should describe the task being started.
+//	fields []zap.Field: a slice of zap.Field items that provide additional context for the log entry.
 func logTaskStart(message string, fields []zap.Field) {
 	navigator.LogInfoWithEmoji(language.PirateEmoji, message, fields...)
 }
