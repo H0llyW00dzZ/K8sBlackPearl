@@ -58,6 +58,8 @@ func LoadTasksFromJSON(filePath string) ([]Task, error) {
 	return parseTasks(tasks)
 }
 
+// unmarshalJSON takes a byte slice of JSON data and unmarshals it into the provided tasks slice.
+// It returns an error if the unmarshalling process fails.
 func unmarshalJSON(file []byte, tasks *[]Task) error {
 	return json.Unmarshal(file, tasks)
 }
@@ -83,15 +85,21 @@ func LoadTasksFromYAML(filePath string) ([]Task, error) {
 	return parseTasks(tasks)
 }
 
+// unmarshalYAML takes a byte slice of YAML data and unmarshals it into the provided tasks slice.
+// It returns an error if the unmarshalling process fails.
 func unmarshalYAML(file []byte, tasks *[]Task) error {
 	return yaml.Unmarshal(file, tasks)
 }
 
+// parseTasks iterates through a slice of tasks, parsing the RetryDelay string into a time.Duration
+// and updating the RetryDelayDuration field for each task. It returns the updated slice of tasks
+// and any error that occurs during the parsing of the retry delay.
 func parseTasks(tasks []Task) ([]Task, error) {
 	for i, task := range tasks {
 		duration, err := ParseDuration(task.RetryDelay)
 		if err != nil {
-			return nil, fmt.Errorf(language.ErrorFailedToParseRetryDelayFromTask, task.Name, err)
+			// Wrapping the error with the task name to provide context.
+			return nil, fmt.Errorf("%s: %w", task.Name, err)
 		}
 		tasks[i].RetryDelayDuration = duration
 	}
@@ -118,6 +126,8 @@ func LoadTasks(filePath string) ([]Task, error) {
 	}
 }
 
+// ParseDuration converts a duration string into a time.Duration object.
+// It returns an error if the string is empty or if the format is not recognized.
 func ParseDuration(durationStr string) (time.Duration, error) {
 	if durationStr == "" {
 		return 0, fmt.Errorf(language.ErrorDurationstringisEmpty)

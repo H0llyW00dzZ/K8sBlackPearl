@@ -16,6 +16,8 @@ import (
 )
 
 // InitializeTasks loads tasks from the specified configuration file.
+// filePath is the path to the configuration file that contains the task definitions.
+// It returns a slice of Task structs loaded from the configuration file and any error encountered.
 func InitializeTasks(filePath string) ([]configuration.Task, error) {
 	return configuration.LoadTasks(filePath)
 }
@@ -211,6 +213,11 @@ func (c *CrewScaleDeployments) Run(ctx context.Context, clientset *kubernetes.Cl
 	return nil
 }
 
+// extractScaleParameters extracts the scaling parameters 'deploymentName' and 'replicas' from the task parameters.
+//
+// It validates the parameters and returns them along with any error encountered.
+// task is the configuration.Task struct containing the parameters.
+// Returns the deployment name, the number of replicas, the retry delay duration, and any error encountered.
 func (c *CrewScaleDeployments) extractScaleParameters(task configuration.Task) (string, int, time.Duration, error) {
 	deploymentName, err := getParamAsString(task.Parameters, deploYmentName)
 	if err != nil {
@@ -230,6 +237,20 @@ func (c *CrewScaleDeployments) extractScaleParameters(task configuration.Task) (
 	return deploymentName, replicas, retryDelayDuration, nil
 }
 
+// performScaling carries out the scaling operation for a Kubernetes deployment.
+//
+// It uses the provided Kubernetes clientset to change the number of replicas for the specified deployment.
+// The operation is retried up to maxRetries times with a delay of retryDelayDuration between attempts.
+// The results of the operation are sent to the provided results channel.
+// ctx is the context for cancellation and deadlines.
+// clientset is the Kubernetes clientset for API interactions.
+// shipsNamespace is the namespace where the deployment resides.
+// deploymentName is the name of the deployment to scale.
+// replicas is the desired number of replicas.
+// maxRetries is the maximum number of retry attempts.
+// retryDelayDuration is the duration to wait between retries.
+// results is a channel for sending the results of the scaling operation.
+// Returns an error if the scaling operation fails.
 func (c *CrewScaleDeployments) performScaling(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace, deploymentName string, replicas, maxRetries int, retryDelayDuration time.Duration, results chan<- string) error {
 	return ScaleDeployment(ctx, clientset, shipsNamespace, deploymentName, replicas, maxRetries, retryDelayDuration, results, zap.L())
 }

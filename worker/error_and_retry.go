@@ -19,10 +19,11 @@ import (
 // to indicate the total number of allowed retries.
 //
 // Parameters:
-//   - taskName: The name of the task being attempted.
-//   - attempt: The current retry attempt number.
-//   - err: The error encountered during the task execution that prompted the retry.
-//   - maxRetries: The maximum number of retry attempts.
+//
+//	taskName string: The name of the task being attempted.
+//	attempt int: The current retry attempt number.
+//	err error: The error encountered during the task execution that prompted the retry.
+//	maxRetries int: The maximum number of retry attempts.
 func logRetryAttempt(taskName string, attempt int, err error, maxRetries int) {
 	navigator.LogErrorWithEmojiRateLimited(
 		constant.ErrorEmoji,
@@ -37,10 +38,11 @@ func logRetryAttempt(taskName string, attempt int, err error, maxRetries int) {
 // to indicate the total number of allowed retries.
 //
 // Parameters:
-//   - shipsnamespace: The namespace where the task was attempted.
-//   - taskName: The name of the task that failed.
-//   - err: The final error encountered that resulted in the task failure.
-//   - maxRetries: The maximum number of retry attempts.
+//
+//	shipsnamespace string: The namespace where the task was attempted.
+//	taskName string: The name of the task that failed.
+//	err error: The final error encountered that resulted in the task failure.
+//	maxRetries int: The maximum number of retry attempts.
 func logFinalError(shipsnamespace string, taskName string, err error, maxRetries int) {
 	finalErrorMessage := fmt.Sprintf(language.ErrorFailedToCompleteTask, taskName, maxRetries)
 	navigator.LogErrorWithEmojiRateLimited(
@@ -59,19 +61,19 @@ func logFinalError(shipsnamespace string, taskName string, err error, maxRetries
 //
 // Parameters:
 //
-//	ctx: The context governing cancellation.
-//	clientset: The Kubernetes client set used for task operations.
-//	shipsnamespace: The Kubernetes namespace where the task was attempted.
-//	err: The error encountered during the task execution.
-//	attempt: The current retry attempt number.
-//	task: The task being attempted.
-//	workerIndex: The index of the worker processing the task.
-//	maxRetries: The maximum number of retry attempts allowed.
-//	retryDelay: The duration to wait before making the next retry attempt.
+//	ctx context.Context: The context governing cancellation.
+//	*kubernetes.Clientset: The Kubernetes client set used for task operations.
+//	shipsnamespace string: The Kubernetes namespace where the task was attempted.
+//	err error: The error encountered during the task execution.
+//	attempt int: The current retry attempt number.
+//	task *configuration.Task: The task being attempted.
+//	workerIndex int: The index of the worker processing the task.
+//	maxRetries int: The maximum number of retry attempts allowed.
+//	retryDelay time.Duration: The duration to wait before making the next retry attempt.
 //
 // Returns:
 //
-//	shouldContinue: A boolean indicating whether the task should be retried or not.
+//	shouldContinue bool: A boolean indicating whether the task should be retried or not.
 func handleTaskError(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, err error, attempt int, task *configuration.Task, workerIndex int, maxRetries int, retryDelay time.Duration) (shouldContinue bool) {
 	if ctx.Err() != nil {
 		return false
@@ -91,14 +93,14 @@ func handleTaskError(ctx context.Context, clientset *kubernetes.Clientset, ships
 //
 // Parameters:
 //
-//	ctx: The context governing cancellation.
-//	clientset: The Kubernetes client set used for task operations.
-//	shipsnamespace: The Kubernetes namespace where the task was attempted.
-//	task: The task being attempted.
+//	ctx context.Context: The context governing cancellation.
+//	clientset *kubernetes.Clientset: The Kubernetes client set used for task operations.
+//	shipsnamespace string: The Kubernetes namespace where the task was attempted.
+//	task *configuration.Task: The task being attempted.
 //
 // Returns:
 //
-//	A boolean indicating whether the task should be retried after conflict resolution.
+//	bool: A boolean indicating whether the task should be retried after conflict resolution.
 func handleConflictError(ctx context.Context, clientset *kubernetes.Clientset, shipsnamespace string, task *configuration.Task) bool {
 	if resolveErr := resolveConflict(ctx, clientset, shipsnamespace, task); resolveErr != nil {
 		return false
@@ -113,17 +115,17 @@ func handleConflictError(ctx context.Context, clientset *kubernetes.Clientset, s
 //
 // Parameters:
 //
-//	ctx: The context governing cancellation.
-//	err: The error encountered during task execution.
-//	attempt: The current retry attempt number.
-//	task: The task being attempted.
-//	workerIndex: The index of the worker processing the task.
-//	maxRetries: The maximum number of retry attempts allowed.
-//	retryDelay: The duration to wait before making the next retry attempt.
+//	ctx context.Context: The context governing cancellation.
+//	err error: The error encountered during task execution.
+//	attempt int: The current retry attempt number.
+//	task *configuration.Task: The task being attempted.
+//	workerIndex int: The index of the worker processing the task.
+//	maxRetries int: The maximum number of retry attempts allowed.
+//	retryDelay time.Duration: The duration to wait before making the next retry attempt.
 //
 // Returns:
 //
-//	A boolean indicating whether the task should be retried or not.
+//	bool: A boolean indicating whether the task should be retried or not.
 func handleGenericError(ctx context.Context, err error, attempt int, task *configuration.Task, workerIndex int, maxRetries int, retryDelay time.Duration) bool {
 	logRetryAttempt(task.Name, attempt, err, maxRetries)
 	time.Sleep(retryDelay)

@@ -12,8 +12,9 @@ import (
 // coordinating task claims among multiple worker routines in a concurrent environment.
 //
 // The struct contains two maps:
-//   - tasks: A map that stores tasks by their names, allowing quick retrieval and updates.
-//   - claimed: A map that tracks whether tasks have been claimed, with a boolean indicating the claim status.
+//
+//	tasks   map[string]configuration.Task: A map that stores tasks by their names, allowing quick retrieval and updates.
+//	claimed map[string]bool: A map that tracks whether tasks have been claimed, with a boolean indicating the claim status.
 //
 // The methods of TaskStatusMap provide safe manipulation of tasks and their claim status, ensuring
 // that all operations are atomic and no data races occur.
@@ -28,7 +29,8 @@ type TaskStatusMap struct {
 // structure for task tracking.
 //
 // Returns:
-//   - *TaskStatusMap: A pointer to the newly created TaskStatusMap instance.
+//
+//	*TaskStatusMap: A pointer to the newly created TaskStatusMap instance.
 func NewTaskStatusMap() *TaskStatusMap {
 	return &TaskStatusMap{
 		tasks:   make(map[string]configuration.Task),
@@ -41,7 +43,8 @@ func NewTaskStatusMap() *TaskStatusMap {
 // does not interfere with other concurrent operations on the TaskStatusMap.
 //
 // Parameters:
-//   - task: The task to add or update in the map.
+//
+//	task configuration.Task: The task to add or update in the map.
 //
 // Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) AddTask(task configuration.Task) {
@@ -55,11 +58,13 @@ func (s *TaskStatusMap) AddTask(task configuration.Task) {
 // existence and details of a task without risking a data race.
 //
 // Parameters:
-//   - name: The name of the task to retrieve.
+//
+//	name string: The name of the task to retrieve.
 //
 // Returns:
-//   - configuration.Task: The retrieved task.
-//   - bool: A boolean indicating whether the task was found in the map.
+//
+//	configuration.Task: The retrieved task.
+//	bool: A boolean indicating whether the task was found in the map.
 //
 // Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) GetTask(name string) (configuration.Task, bool) {
@@ -74,7 +79,8 @@ func (s *TaskStatusMap) GetTask(name string) (configuration.Task, bool) {
 // is useful when a task's properties need to be changed during its lifecycle.
 //
 // Parameters:
-//   - task: The task with updated information to be stored in the map.
+//
+//	task configuration.Task: The task with updated information to be stored in the map.
 //
 // Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) UpdateTask(task configuration.Task) {
@@ -88,7 +94,8 @@ func (s *TaskStatusMap) UpdateTask(task configuration.Task) {
 // to a task that is no longer relevant.
 //
 // Parameters:
-//   - name: The name of the task to remove.
+//
+//	name string: The name of the task to remove.
 //
 // Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) DeleteTask(name string) {
@@ -104,10 +111,12 @@ func (s *TaskStatusMap) DeleteTask(name string) {
 // for coordinating task claims among concurrent workers.
 //
 // Parameters:
-//   - taskName: The name of the task to claim.
+//
+//	taskName string: The name of the task to claim.
 //
 // Returns:
-//   - bool: A boolean indicating whether the task was successfully claimed.
+//
+//	bool: A boolean indicating whether the task was successfully claimed.
 //
 // Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) Claim(taskName string) bool {
@@ -126,7 +135,8 @@ func (s *TaskStatusMap) Claim(taskName string) bool {
 // available again.
 //
 // Parameters:
-//   - taskName: The name of the task to unclaim.
+//
+//	taskName string: The name of the task to unclaim.
 func (s *TaskStatusMap) Release(taskName string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -138,7 +148,8 @@ func (s *TaskStatusMap) Release(taskName string) {
 // that further manipulations of the slice do not affect the original tasks in the map.
 //
 // Returns:
-//   - []configuration.Task: A slice containing all tasks from the tasks map.
+//
+//	[]configuration.Task: A slice containing all tasks from the tasks map.
 //
 // Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) GetAllTasks() []configuration.Task {
@@ -156,10 +167,12 @@ func (s *TaskStatusMap) GetAllTasks() []configuration.Task {
 // to verify if a task is already being processed by another worker.
 //
 // Parameters:
-//   - taskName: The name of the task to check the claim status for.
+//
+//	taskName string: The name of the task to check the claim status for.
 //
 // Returns:
-//   - bool: A boolean indicating whether the task is currently claimed.
+//
+//	bool: A boolean indicating whether the task is currently claimed.
 //
 // Note: this deadcode is left here for future use.
 func (s *TaskStatusMap) IsClaimed(taskName string) bool {

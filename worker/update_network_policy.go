@@ -23,13 +23,14 @@ import (
 // a failure is reported.
 //
 // Parameters:
-//   - ctx: Context for cancellation and timeout.
-//   - clientset: A Kubernetes clientset for interacting with the Kubernetes API.
-//   - namespace: The Kubernetes namespace containing the NetworkPolicy.
-//   - policyName: The name of the NetworkPolicy to update.
-//   - policySpec: The new specification for the NetworkPolicy.
-//   - results: A channel to send operation results for logging.
-//   - logger: A logger for structured logging.
+//
+//	ctx context.Context: Context for cancellation and timeout.
+//	clientset *kubernetes.Clientset: A Kubernetes clientset for interacting with the Kubernetes API.
+//	namespace: The Kubernetes namespace containing the NetworkPolicy.
+//	policyName string: The name of the NetworkPolicy to update.
+//	policySpec networkingv1.NetworkPolicySpec: The new specification for the NetworkPolicy.
+//	esults chan<- string: A channel to send operation results for logging.
+//	logger *zap.Logger: A logger for structured logging.
 //
 // Returns an error if the operation fails after retries or if a non-conflict error is encountered.
 func UpdateNetworkPolicy(ctx context.Context, clientset *kubernetes.Clientset, namespace, policyName string, policySpec networkingv1.NetworkPolicySpec, results chan<- string, logger *zap.Logger) error {
@@ -94,7 +95,8 @@ func extractPolicyName(parameters map[string]interface{}) (string, error) {
 // into a networkingv1.NetworkPolicySpec struct.
 //
 // Parameters:
-//   - policySpecData: A string containing the NetworkPolicy specification in JSON or YAML format.
+//
+//	policySpecData string: A string containing the NetworkPolicy specification in JSON or YAML format.
 //
 // Returns the unmarshaled NetworkPolicySpec and an error if unmarshaling fails.
 func unmarshalPolicySpec(policySpecData string) (networkingv1.NetworkPolicySpec, error) {

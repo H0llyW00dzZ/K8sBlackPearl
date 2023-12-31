@@ -21,14 +21,15 @@ import (
 // number of retries, it reports the failure.
 //
 // Parameters:
-//   - ctx: Context for cancellation and timeout.
-//   - clientset: A Kubernetes clientset to interact with the Kubernetes API.
-//   - namespace: The Kubernetes namespace containing the deployment.
-//   - deploymentName: The name of the deployment to update.
-//   - containerName: The name of the container within the deployment to update.
-//   - newImage: The new image to apply to the container.
-//   - results: A channel to send operation results for logging.
-//   - logger: A logger for structured logging.
+//
+//	ctx context.Context: Context for cancellation and timeout.
+//	clientset *kubernetes.Clientset: A Kubernetes clientset to interact with the Kubernetes API.
+//	namespace: The Kubernetes namespace containing the deployment.
+//	deploymentName: The name of the deployment to update.
+//	containerName: The name of the container within the deployment to update.
+//	newImage string: The new image to apply to the container.
+//	maxRetries int: A channel to send operation results for logging.
+//	retryDelay time.Duration: A logger for structured logging.
 //
 // Returns an error if the operation fails after the maximum number of retries or if a non-conflict error is encountered.
 func UpdateDeploymentImage(ctx context.Context, clientset *kubernetes.Clientset, namespace, deploymentName, containerName, newImage string, maxRetries int, retryDelay time.Duration, results chan<- string, logger *zap.Logger) error {

@@ -14,12 +14,13 @@ import (
 // createPVC creates a persistent volume claim (PVC) in the specified namespace.
 //
 // Parameters:
-//   - ctx: Context for cancellation and timeout.
-//   - clientset: A Kubernetes clientset to interact with the Kubernetes API.
-//   - shipsNamespace: The Kubernetes namespace in which to create the PVC.
-//   - storageClassName: The name of the storage class to use for the PVC.
-//   - pvcName: The name of the PVC to create.
-//   - storageSize: The size of the PVC in gigabytes.
+//
+//	ctx context.Context: Context for cancellation and timeout.
+//	clientset *kubernetes.Clientset: A Kubernetes clientset to interact with the Kubernetes API.
+//	shipsNamespace: The Kubernetes namespace in which to create the PVC.
+//	storageClassName: The name of the storage class to use for the PVC.
+//	pvcName: The name of the PVC to create.
+//	storageSize string: The size of the PVC in gigabytes.
 //
 // Returns an error if the PVC cannot be created.
 func createPVC(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace, storageClassName, pvcName, storageSize string) error {

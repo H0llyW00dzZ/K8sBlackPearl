@@ -15,15 +15,17 @@ import (
 // The shutdown function ensures all workers are stopped and the results channel is closed.
 //
 // Parameters:
-//   - ctx: Parent context to control the lifecycle of the workers.
-//   - clientset: Kubernetes API client for task operations.
-//   - shipsNamespace: Namespace in Kubernetes to perform tasks.
-//   - tasks: Slice of Task structs to be executed by the workers.
-//   - workerCount: Number of worker goroutines to start.
+//
+//	ctx context.Context: Parent context to control the lifecycle of the workers.
+//	clientset *kubernetes.Clientset: Kubernetes API client for task operations.
+//	shipsNamespace string: Namespace in Kubernetes to perform tasks.
+//	tasks []configuration.Task: Slice of Task structs to be executed by the workers.
+//	workerCount int: Number of worker goroutines to start.
 //
 // Returns:
-//   - <-chan string: A read-only channel to receive task results.
-//   - func(): A function to call for initiating a graceful shutdown of the workers.
+//
+//	<-chan string,: A read-only channel to receive task results.
+//	func()): A function to call for initiating a graceful shutdown of the workers.
 func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []configuration.Task, workerCount int) (<-chan string, func()) {
 	results := make(chan string)
 	var wg sync.WaitGroup
