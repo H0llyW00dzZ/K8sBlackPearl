@@ -73,6 +73,9 @@ const (
 	ErrorFailedToParseDurationFromTask     = "failed to parse duration from task %s: %w"
 	ErrorDurationstringisEmpty             = "duration string is empty"
 	ErrorFailedtoExtractParameter          = "failed to extract parameter '%s': %w"
+	ErrorSailingShips                      = "sailing ships failed after %d attempts"
+	ErrorAttemptFailed                     = "attempt %d failed: %w"
+	ErrorTaskFailedAfterAttempts           = "task %s failed after %d attempts: %w"
 )
 
 const (
