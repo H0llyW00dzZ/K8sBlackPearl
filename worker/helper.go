@@ -52,7 +52,8 @@ func (r *RetryPolicy) Execute(ctx context.Context, operation func() (string, err
 			return nil // The operation was successful, return nil error.
 		}
 		lastErr = err
-		logRetryAttempt(taskName, attempt, err, r.MaxRetries, logFunc)
+		// Pass Context to logRetryAttempt.
+		logRetryAttempt(taskName, attempt, r.MaxRetries, err, logFunc)
 		if attempt < r.MaxRetries-1 {
 			if !waitForNextAttempt(ctx, r.RetryDelay) {
 				return ctx.Err() // Context was cancelled, return the context error.
