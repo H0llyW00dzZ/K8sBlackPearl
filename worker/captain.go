@@ -18,7 +18,6 @@ import (
 //
 //	ctx context.Context: Parent context to control the lifecycle of the workers.
 //	clientset *kubernetes.Clientset: Kubernetes API client for task operations.
-//	shipsNamespace string: Namespace in Kubernetes to perform tasks.
 //	tasks []configuration.Task: Slice of Task structs to be executed by the workers.
 //	workerCount int: Number of worker goroutines to start.
 //
@@ -26,7 +25,7 @@ import (
 //
 //	<-chan string: A read-only channel to receive task results.
 //	func()): A function to call for initiating a graceful shutdown of the workers.
-func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, tasks []configuration.Task, workerCount int) (<-chan string, func()) {
+func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, tasks []configuration.Task, workerCount int) (<-chan string, func()) {
 	results := make(chan string)
 	var wg sync.WaitGroup
 	var once sync.Once               // Use sync.Once to ensure shutdown is only called once
@@ -39,7 +38,7 @@ func CaptainTellWorkers(ctx context.Context, clientset *kubernetes.Clientset, sh
 		go func(workerIndex int) {
 			defer wg.Done()
 			workerLogger := zap.L().With(zap.Int(language.Worker_Name, workerIndex))
-			CrewWorker(shutdownCtx, clientset, shipsNamespace, tasks, results, workerLogger, taskStatus, workerIndex)
+			CrewWorker(shutdownCtx, clientset, tasks, results, workerLogger, taskStatus, workerIndex)
 		}(i)
 	}
 
