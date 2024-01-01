@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
@@ -90,14 +91,29 @@ func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset
 //	err error: The error encountered during the task execution that prompted the retry.
 //	maxRetries int: The maximum number of retry attempts.
 //	logFunc func(string, ...zap.Field): The log function to use.
-func logRetryAttempt(taskName string, attempt int, err error, maxRetries int, logFunc func(string, ...zap.Field)) {
-	message := fmt.Sprintf(language.ErrorDuringTaskAttempt, attempt+1, maxRetries, err)
+func logRetryAttempt(taskName string, attempt int, maxRetries int, err error, logFunc func(string, ...zap.Field)) {
+	// Initialize a slice with the error emoji.
+	emojis := []string{language.RetryEmoji}
+
+	// If it's the final attempt, add the warning emoji to the slice.
+	if attempt == maxRetries {
+		emojis = append(emojis, constant.ErrorEmoji, language.WarningEmoji)
+	}
+
+	// Join the emojis with a separator.
+	emojiStr := strings.Join(emojis, " ")
+
+	// Construct the log message with the emoji(s) at the beginning.
+	message := fmt.Sprintf(language.ErrorDuringTaskAttempt, emojiStr, attempt, maxRetries, err)
+
+	// Create the logging fields.
 	fields := []zap.Field{
 		zap.String(tasK, taskName),
 		zap.Int(attempT, attempt),
 		zap.Int(maXRetries, maxRetries),
 		zap.Error(err),
 	}
+	// Log the message using the provided logging function.
 	logFunc(message, fields...)
 }
 
@@ -198,7 +214,8 @@ func handleConflictError(ctx context.Context, clientset *kubernetes.Clientset, s
 //
 //	bool: A boolean indicating whether the task should be retried or not.
 func handleGenericError(ctx context.Context, err error, attempt int, task *configuration.Task, workerIndex int, maxRetries int, retryDelay time.Duration) bool {
-	logRetryAttempt(task.Name, attempt, err, maxRetries, navigator.Logger.Info)
+	// Pass Context to logRetryAttempt
+	logRetryAttempt(task.Name, attempt, maxRetries, err, navigator.Logger.Info)
 
 	// Wait for the next attempt, respecting the context cancellation.
 	if !waitForNextAttempt(ctx, retryDelay) {
