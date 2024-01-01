@@ -19,7 +19,11 @@ import (
 // filePath is the path to the configuration file that contains the task definitions.
 // It returns a slice of Task structs loaded from the configuration file and any error encountered.
 func InitializeTasks(filePath string) ([]configuration.Task, error) {
-	return configuration.LoadTasks(filePath)
+	tasks, err := configuration.LoadTasks(filePath)
+	if err != nil {
+		return nil, err
+	}
+	return tasks, nil
 }
 
 // TaskRunner defines the interface for running tasks.
