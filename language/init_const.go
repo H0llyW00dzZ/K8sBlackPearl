@@ -19,7 +19,7 @@ const (
 	ErrorFailedToComplete                  = "Failed to complete task after %d attempts"
 	ContextCancelledAbort                  = "Context cancelled, aborting retries."
 	ContextCancelled                       = "Context cancelled"
-	ErrorDuringTaskAttempt                 = "Error during task, attempt %d/%d: %v"
+	ErrorDuringTaskAttempt                 = "%s Error during task, attempt %d/%d: %v"
 	UnknownTaskType                        = "unknown task type: %s"
 	InvalidParameters                      = "invalid parameters"
 	InvalidparametersL                     = "invalid parameters: labelSelector, fieldSelector, or limit"
@@ -167,6 +167,8 @@ const (
 	PirateEmoji  = "🏴‍☠️ "
 	SwordEmoji   = "⚔️ "
 	CompassEmoji = "🧭 "
+	RetryEmoji   = "🔄 "
+	WarningEmoji = "⚠️ "
 )
 
 const (

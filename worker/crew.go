@@ -7,7 +7,6 @@ import (
 	"github.com/H0llyW00dzZ/K8sBlackPearl/language"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/navigator"
 	"github.com/H0llyW00dzZ/K8sBlackPearl/worker/configuration"
-	"github.com/H0llyW00dzZ/go-urlshortner/logmonitor/constant"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -91,59 +90,6 @@ func handleFailedTask(task configuration.Task, taskStatus *TaskStatusMap, shipsN
 func handleSuccessfulTask(task configuration.Task, results chan<- string, workerIndex int) {
 	successMessage := fmt.Sprintf(language.TaskWorker_Name, workerIndex, fmt.Sprintf(language.TaskCompleteS, task.Name))
 	results <- successMessage
-}
-
-// performTaskWithRetries tries to execute a task, with retries on failure.
-// It honors the cancellation signal from the context and ceases retry attempts
-// if the context is cancelled. If the task remains incomplete after all retries,
-// it returns an error detailing the failure.
-//
-// Parameters:
-//
-//	ctx context.Context: Context for task cancellation and timeouts.
-//	clientset *kubernetes.Clientset: Kubernetes API client for executing tasks.
-//	shipsNamespace string: Kubernetes namespace for task execution.
-//	task configuration.Task: Task to be executed.
-//	results chan<- string: Channel for reporting task execution results.
-//	workerIndex int: Index of the worker for contextual logging.
-//	taskStatus *TaskStatusMap: Map to track and control the status of tasks.
-//
-// Returns:
-//
-//	error: Error if the task fails after all retry attempts.
-func performTaskWithRetries(ctx context.Context, clientset *kubernetes.Clientset, shipsNamespace string, task configuration.Task, results chan<- string, workerIndex int, taskStatus *TaskStatusMap) error {
-	// Define the operation to be retried.
-	operation := func() (string, error) {
-		// Attempt to perform the task.
-		err := performTask(ctx, clientset, shipsNamespace, task, workerIndex)
-		return task.Name, err // Return the task name along with the error.
-	}
-
-	// Create a RetryPolicy instance with the task's retry settings.
-	retryPolicy := RetryPolicy{
-		MaxRetries: task.MaxRetries,
-		RetryDelay: task.RetryDelayDuration,
-	}
-
-	// Use the RetryPolicy's Execute method to perform the operation with retries.
-	err := retryPolicy.Execute(ctx, operation, func(message string, fields ...zap.Field) {
-		// This is a placeholder for the actual logging function.
-		// Replace this with the actual function to log retries.
-		// For example: navigator.LogInfoWithEmoji or navigator.LogErrorWithEmoji
-		// Combine emojis with a space for readability.
-		emojiField := fmt.Sprintf("%s %s", constant.ErrorEmoji, language.PirateEmoji)
-		navigator.LogErrorWithEmoji(emojiField, message, fields...)
-	})
-
-	if err != nil {
-		// If the operation failed after retries, handle the failure.
-		handleFailedTask(task, taskStatus, shipsNamespace, err, results, workerIndex)
-		return fmt.Errorf(language.ErrorFailedToCompleteTask, task.Name, task.MaxRetries)
-	}
-
-	// If the operation was successful, handle the success.
-	handleSuccessfulTask(task, results, workerIndex)
-	return nil
 }
 
 // resolveConflict attempts to resolve a conflict error by retrieving the latest version of a pod involved in the task.
