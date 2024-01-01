@@ -178,8 +178,7 @@ func main() {
 	}
 
 	// Define the namespace and number of workers.
-	shipsNamespace := "default" // Replace with your namespace
-	workerCount := 1            // Number of workers you want to start
+	workerCount := 1 // Number of workers you want to start
 
 	tasks, err := worker.InitializeTasks(filePath)
 	if err != nil {
@@ -189,7 +188,7 @@ func main() {
 	// Start workers.
 	var wg sync.WaitGroup
 	wg.Add(1)
-	results, shutdown := worker.CaptainTellWorkers(ctx, clientset, shipsNamespace, tasks, workerCount)
+	results, shutdown := worker.CaptainTellWorkers(ctx, clientset, tasks, workerCount)
 
 	go func() {
 		defer wg.Done()
