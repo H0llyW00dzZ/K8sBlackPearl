@@ -47,18 +47,15 @@ type RetryPolicy struct {
 func (r *RetryPolicy) Execute(ctx context.Context, operation func() (string, error), logFunc func(string, ...zap.Field)) error {
 	var lastErr error
 	for attempt := 0; attempt < r.MaxRetries; attempt++ {
-		select {
-		case <-ctx.Done():
-			return ctx.Err() // Context was cancelled, return the context error.
-		default:
-			taskName, err := operation()
-			if err == nil {
-				return nil // The operation was successful, return nil error.
-			}
-			lastErr = err
-			logRetryAttempt(taskName, attempt, err, r.MaxRetries, logFunc)
-			if attempt < r.MaxRetries-1 {
-				time.Sleep(r.RetryDelay) // Wait before the next attempt.
+		taskName, err := operation()
+		if err == nil {
+			return nil // The operation was successful, return nil error.
+		}
+		lastErr = err
+		logRetryAttempt(taskName, attempt, err, r.MaxRetries, logFunc)
+		if attempt < r.MaxRetries-1 {
+			if !waitForNextAttempt(ctx, r.RetryDelay) {
+				return ctx.Err() // Context was cancelled, return the context error.
 			}
 		}
 	}
@@ -202,8 +199,10 @@ func logResultsFromChannel(results chan string, fields []zap.Field) {
 func waitForNextAttempt(ctx context.Context, retryDelay time.Duration) bool {
 	select {
 	case <-ctx.Done():
+		// The context was cancelled, so don't wait and return false to indicate that the operation should not continue.
 		return false
 	case <-time.After(retryDelay):
+		// The retry delay has elapsed without the context being cancelled, so return true to indicate that the operation can continue.
 		return true
 	}
 }
